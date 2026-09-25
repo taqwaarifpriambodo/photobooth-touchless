@@ -22,12 +22,12 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
 - **Target Pengguna:** Pengunjung acara (_event/exhibition_), pengguna _pop-up booth_, atau pengguna umum yang ingin mengambil foto secara mandiri.
 - **Skenario Penggunaan:**
   1. Pengunjung berdiri di depan layar photo booth. Kamera aktif secara otomatis jika izin kamera sudah pernah diberikan.
-  2. Layar menampilkan **Halaman Welcome** berisi salam pembuka (*greeting*), 3 langkah panduan cepat (*quick start guide*), dan tombol touchless "Mulai Sekarang ✨".
-  3. Pengunjung mengarahkan jari telunjuk ke kamera untuk menggerakkan kursor virtual, lalu menahan kursor di tombol "Mulai Sekarang ✨" selama 1.5 detik (*dwell time*).
+  2. Layar menampilkan **Halaman Welcome** berisi salam pembuka (_greeting_), 3 langkah panduan cepat (_quick start guide_), dan tombol touchless "Mulai Sekarang ✨".
+  3. Pengunjung mengarahkan jari telunjuk ke kamera untuk menggerakkan kursor virtual, lalu menahan kursor di tombol "Mulai Sekarang ✨" selama 1.5 detik (_dwell time_).
   4. Pengunjung memilih salah satu frame dari galeri paginasi (**6 frame per halaman** dalam grid 3x2 yang responsif dengan tombol navigasi touchless `❮` `❯`).
   5. Halaman pemilihan frame dilengkapi **timer otomatis 2 menit (120 detik)**. Jika pengunjung tidak menekan tombol dalam 2 menit, sistem otomatis memulai sesi foto dengan frame default.
   6. Pengunjung mengonfirmasi pilihan dengan menahan kursor (_dwell time_ 1.5 detik) di tombol "Mulai Foto (Nx Take)".
-  7. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot frame (misal 2 atau 3 jepretan) dengan panduan garis bantu (*framing guide*), **animasi hitung mundur 10 detik (angka berubah warna merah saat $\le 3$ detik)**, dan efek kilat layar (_flash_).
+  7. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot frame (misal 2 atau 3 jepretan) dengan panduan garis bantu (_framing guide_), **animasi hitung mundur 10 detik (angka berubah warna merah saat $\le 3$ detik)**, dan efek kilat layar (_flash_).
   8. Sistem menggabungkan seluruh foto hasil jepretan secara real-time ke dalam slot frame pilihan.
   9. Layar menampilkan preview hasil foto, QR Code dengan Signed URL berdurasi 1 jam, serta indikator peringatan waktu unduh.
   10. Pengunjung memindai QR Code menggunakan smartphone untuk mengunduh foto strip sebelum link kedaluwarsa. Layar otomatis _reset_ kembali ke **Halaman Welcome** dalam 60 detik (atau langsung klik tombol touchless "Selesai & Kembali ✨").
@@ -39,7 +39,7 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
 | Layer                    | Teknologi                             | Peran & Alasan Pemilihan                                                                               |
 | ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | **Frontend Framework**   | Next.js (App Router, React 19)        | Manajemen _state_ UI, performa rendering tinggi, fleksibilitas integrasi React components.             |
-| **Styling & UI**         | Tailwind CSS v4 + Framer Motion       | Desain modern bernuansa solid amber & dark zinc, tanpa gradient mencolok, animasi fluid dan responsif.  |
+| **Styling & UI**         | Tailwind CSS v4 + Framer Motion       | Desain modern bernuansa solid amber & dark zinc, tanpa gradient mencolok, animasi fluid dan responsif. |
 | **Computer Vision**      | MediaPipe Hand Landmarker             | Pelacakan 21 titik _landmark_ tangan secara _client-side_ via WebAssembly (WASM).                      |
 | **Media & Canvas API**   | HTML5 `getUserMedia` & `<canvas>`     | Mengakses _stream_ webcam real-time (mirrored) dan memproses gabungan foto + frame.                    |
 | **Backend & Storage**    | Supabase (Database, Storage, pg_cron) | Storage Bucket `frame_image` & `photobooth_images`, tabel `frames` & `photos`, serta cronjob otomatis. |
@@ -56,7 +56,7 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
    - Menyambut pengunjung dengan greeting ramah dan lencana branding `TOUCHLESS PHOTO BOOTH`.
    - Menampilkan 3 kartu panduan visual:
      1. **Gerakkan Kursor ☝️:** Mengarahkan jari telunjuk ke arah kamera.
-     2. **Tahan untuk Memilih ⏱️:** Menahan kursor selama 1.5 detik (*dwell timer*) pada elemen yang dituju.
+     2. **Tahan untuk Memilih ⏱️:** Menahan kursor selama 1.5 detik (_dwell timer_) pada elemen yang dituju.
      3. **Scan & Download 📲:** Berpose di depan kamera lalu memindai QR Code dengan HP.
    - Tombol utama touchless "Mulai Sekarang ✨" dengan dwell time 1.5 detik (atau klik langsung) untuk beralih ke pemilihan frame.
 3. **Navigasi Touchless & Virtual Cursor:**
@@ -160,7 +160,7 @@ ON public.photos
 FOR INSERT
 TO public
 WITH CHECK (
-  image_url IS NOT NULL 
+  image_url IS NOT NULL
   AND length(image_url) > 5
 );
 
@@ -173,7 +173,7 @@ USING (true);
 
 ### 5.4 Otomatisasi Hapus Foto & Pembersihan Storage (`pg_cron`)
 
-Untuk efisiensi penyimpanan dan perlindungan privasi pengguna, file foto dan record database dibatasi masa simpan maksimal 1 jam. Supabase `pg_cron` dan fungsi PL/pgSQL dieksekusi secara berkala setiap jam dengan proteksi keamanan penuh (*hardened search_path & revoked public RPC*):
+Untuk efisiensi penyimpanan dan perlindungan privasi pengguna, file foto dan record database dibatasi masa simpan maksimal 1 jam. Supabase `pg_cron` dan fungsi PL/pgSQL dieksekusi secara berkala setiap jam dengan proteksi keamanan penuh (_hardened search_path & revoked public RPC_):
 
 ```sql
 -- 1. Aktifkan ekstensi pg_cron (jika belum)
@@ -184,8 +184,8 @@ SELECT cron.unschedule('auto-delete-expired-photobooth-images');
 
 -- 3. Fungsi pembersih foto dengan search_path terkunci dan bypass trigger aman
 CREATE OR REPLACE FUNCTION public.delete_expired_photos()
-RETURNS void 
-LANGUAGE plpgsql 
+RETURNS void
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, storage
 AS $$
@@ -222,13 +222,13 @@ SELECT cron.schedule(
 
 ### 6.1 State Machine Aplikasi
 
-| State Name          | Komponen Tampilan    | Deskripsi Perilaku                                                      |
-| ------------------- | -------------------- | ----------------------------------------------------------------------- |
-| `PERMISSION`        | `PermissionGate`     | Meminta izin akses webcam jika belum diizinkan oleh browser.            |
-| `WELCOME`           | `WelcomeScreen`      | Halaman default awal & tujuan reset: greeting, 3 langkah panduan & CTA. |
-| `FRAME_SELECTION`   | `FrameSelector`      | Galeri frame (6 item/page), countdown 2 menit auto-start.               |
-| `MULTI_SHOT`        | `MultiShotOverlay`   | Pengambilan foto dinamis (countdown, framing guide, white flash).       |
-| `RESULT`            | `ResultView`         | Preview hasil foto strip, QR Code Signed URL 1 jam, auto-reset 60s.     |
+| State Name        | Komponen Tampilan  | Deskripsi Perilaku                                                      |
+| ----------------- | ------------------ | ----------------------------------------------------------------------- |
+| `PERMISSION`      | `PermissionGate`   | Meminta izin akses webcam jika belum diizinkan oleh browser.            |
+| `WELCOME`         | `WelcomeScreen`    | Halaman default awal & tujuan reset: greeting, 3 langkah panduan & CTA. |
+| `FRAME_SELECTION` | `FrameSelector`    | Galeri frame (6 item/page), countdown 2 menit auto-start.               |
+| `MULTI_SHOT`      | `MultiShotOverlay` | Pengambilan foto dinamis (countdown, framing guide, white flash).       |
+| `RESULT`          | `ResultView`       | Preview hasil foto strip, QR Code Signed URL 1 jam, auto-reset 60s.     |
 
 ### 6.2 Pemetaan Koordinat & Smoothing Kursor
 
@@ -254,9 +254,9 @@ SELECT cron.schedule(
 ### 6.5 Pengambilan Foto, Countdown 10 Detik & Dynamic Slots
 
 - **Sesi Multi-Shot Adaptif:** Jumlah sesi foto dihitung dari `selectedFrame.slots.length` (fallback ke 3).
-- **Hitung Mundur 10 Detik & Visual Alert Merah:** Setiap jepretan foto didahului animasi hitung mundur selama 10 detik (10..1). Saat waktu tersisa $\le 3$ detik (3, 2, 1), warna angka otomatis berubah dari putih menjadi **merah menyala** (`text-red-500`) dengan efek *drop-shadow glow* merah untuk memberi sinyal visual persiapan pose akhir.
-- **Garis Bantu Framing Dinamis:** Kotak panduan kamera (*framing guide*) menyesuaikan rasio dimensi `slots[currentShot - 1]` secara real-time pada setiap jepretan, memastikan subjek terbingkai presisi tanpa terpotong.
-- **Compositing Canvas Real-Time:** Foto diletakkan tepat pada koordinat (`x`, `y`, `width`, `height`) masing-masing slot dengan crop *object-fit: cover*, lalu di-overlay oleh gambar PNG frame.
+- **Hitung Mundur 10 Detik & Visual Alert Merah:** Setiap jepretan foto didahului animasi hitung mundur selama 10 detik (10..1). Saat waktu tersisa $\le 3$ detik (3, 2, 1), warna angka otomatis berubah dari putih menjadi **merah menyala** (`text-red-500`) dengan efek _drop-shadow glow_ merah untuk memberi sinyal visual persiapan pose akhir.
+- **Garis Bantu Framing Dinamis:** Kotak panduan kamera (_framing guide_) menyesuaikan rasio dimensi `slots[currentShot - 1]` secara real-time pada setiap jepretan, memastikan subjek terbingkai presisi tanpa terpotong.
+- **Compositing Canvas Real-Time:** Foto diletakkan tepat pada koordinat (`x`, `y`, `width`, `height`) masing-masing slot dengan crop _object-fit: cover_, lalu di-overlay oleh gambar PNG frame.
 
 ### 6.6 Keamanan QR Code & Masa Berlaku Signed URL
 
