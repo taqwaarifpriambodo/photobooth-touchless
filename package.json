@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",
     "@supabase/supabase-js": "^2.117.1",
