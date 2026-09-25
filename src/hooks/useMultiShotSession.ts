@@ -30,7 +30,7 @@ export function useMultiShotSession({
   onSessionComplete,
 }: UseMultiShotSessionOptions): UseMultiShotSessionReturn {
   const [currentShot, setCurrentShot] = useState(1);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(10);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase | 'IDLE' | 'COMPOSITING'>('IDLE');
   const [isFlashing, setIsFlashing] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<Blob[]>([]);
@@ -50,7 +50,7 @@ export function useMultiShotSession({
     capturedPhotosRef.current = [];
     currentShotRef.current = 1;
     setCurrentShot(1);
-    setCountdown(3);
+    setCountdown(10);
     setSessionPhase('IDLE');
     setIsFlashing(false);
     setCapturedPhotos([]);
@@ -65,8 +65,8 @@ export function useMultiShotSession({
       setCurrentShot(shotIndex);
       setSessionPhase('COUNTDOWN');
 
-      // 1. Countdown loop: 3 -> 2 -> 1
-      for (let c = 3; c >= 1; c--) {
+      // 1. Countdown loop: 10 -> ... -> 1
+      for (let c = 10; c >= 1; c--) {
         if (!isSessionActiveRef.current) return;
         setCountdown(c);
         await new Promise((res) => setTimeout(res, 1000));

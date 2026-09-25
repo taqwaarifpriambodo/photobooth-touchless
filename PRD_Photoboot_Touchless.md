@@ -2,8 +2,8 @@
 
 # Touchless Web Photo Booth
 
-**Versi Document:** 2.3  
-**Status:** Complete / Production Ready (Phase 0–7 Finished & Refined)  
+**Versi Document:** 2.5  
+**Status:** Complete / Production Ready (10s Countdown & Security Hardened)  
 **Frontend Framework:** Next.js (App Router, React 19)  
 **Backend & Database:** Supabase (PostgreSQL, Storage, pg_cron)  
 **AI Computer Vision:** MediaPipe Hand Landmarker  
@@ -27,10 +27,10 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
   4. Pengunjung memilih salah satu frame dari galeri paginasi (**6 frame per halaman** dalam grid 3x2 yang responsif dengan tombol navigasi touchless `❮` `❯`).
   5. Halaman pemilihan frame dilengkapi **timer otomatis 2 menit (120 detik)**. Jika pengunjung tidak menekan tombol dalam 2 menit, sistem otomatis memulai sesi foto dengan frame default.
   6. Pengunjung mengonfirmasi pilihan dengan menahan kursor (_dwell time_ 1.5 detik) di tombol "Mulai Foto (Nx Take)".
-  7. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot frame (misal 2 atau 3 jepretan) dengan panduan garis bantu (*framing guide*), animasi hitung mundur (3, 2, 1), dan efek kilat layar (_flash_).
+  7. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot frame (misal 2 atau 3 jepretan) dengan panduan garis bantu (*framing guide*), **animasi hitung mundur 10 detik (angka berubah warna merah saat $\le 3$ detik)**, dan efek kilat layar (_flash_).
   8. Sistem menggabungkan seluruh foto hasil jepretan secara real-time ke dalam slot frame pilihan.
   9. Layar menampilkan preview hasil foto, QR Code dengan Signed URL berdurasi 1 jam, serta indikator peringatan waktu unduh.
-  10. Pengunjung memindai QR Code menggunakan smartphone untuk mengunduh foto strip sebelum link kedaluwarsa. Layar otomatis _reset_ kembali ke **Halaman Welcome** dalam 60 detik.
+  10. Pengunjung memindai QR Code menggunakan smartphone untuk mengunduh foto strip sebelum link kedaluwarsa. Layar otomatis _reset_ kembali ke **Halaman Welcome** dalam 60 detik (atau langsung klik tombol touchless "Selesai & Kembali ✨").
 
 ---
 
@@ -72,7 +72,7 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
    - Sesi foto berlangsung otomatis sesuai jumlah slot pada frame (`selectedFrame.slots.length`, misal 2 atau 3 foto):
      a. Teks status "FOTO N DARI Total" dan indikator progress bar di sudut layar.
      b. **Garis Bantu Framing (Framing Guide Box)** dengan rasio `width` dan `height` yang persis sama dengan slot aktif saat itu (misal `195x200px`) ditampilkan di tengah layar, lengkap dengan corner brackets amber dan label `Area Foto (Width×Height px)`.
-     c. Animasi hitung mundur (3, 2, 1) berukuran besar di tengah kotak garis bantu.
+     c. **Animasi hitung mundur 10 detik** (10, 9, 8... 1) berukuran besar di tengah kotak garis bantu, di mana angka **berubah warna menjadi merah menyala saat $\le 3$ detik** (3, 2, 1) sebagai sinyal persiapan pose akhir.
      d. Efek kilat layar penuh (_white flash overlay_ ~200ms) saat foto diambil via HTML5 Canvas (mirrored).
      e. Jeda preview singkat (1.5 detik) antar jepretan sebelum beralih ke slot berikutnya.
 6. **Pemrosesan & Komposisi Real-Time:**
@@ -80,7 +80,7 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
    - Gambar frame PNG dari Supabase Storage ditimpa sebagai layer paling atas.
 7. **Layar Hasil & Akses QR Code (Signed URL 1 Jam):**
    - Layar menampilkan _preview_ foto strip komposit (gabungan foto + frame).
-   - Sistem mengunggah foto ke Supabase Storage, menyimpan record di database `photos`, dan membuat **Signed URL** dengan waktu kedaluwarsa 1 jam (3600s).
+   - Sistem mengunggah foto ke Supabase Storage (`upsert: false`), menyimpan record di database `photos`, dan membuat **Signed URL** dengan waktu kedaluwarsa 1 jam (3600s).
    - QR Code di-generate dari Signed URL dan dilengkapi lencana peringatan: `⏳ Link unduhan & QR Code berlaku selama 1 Jam`.
    - Pengguna dapat memindai QR Code untuk mengunduh foto atau memilih tombol touchless "Selesai & Kembali ✨" untuk kembali ke Halaman Welcome.
 8. **Auto Reset & Cleansing Policy:**
@@ -89,14 +89,29 @@ Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan rama
 
 ---
 
-## 5. Rancangan Database & Storage (Supabase)
+## 5. Rancangan Database, Storage & Security Hardening (Supabase)
 
-### 5.1 Storage Buckets
+### 5.1 Storage Buckets & Policies (`storage.objects`)
 
 1. **`frame_image`**: Public Bucket untuk menyimpan file gambar PNG transparan frame (e.g. `frame_01_bunga.png`).
 2. **`photobooth_images`**: Bucket untuk menyimpan file hasil akhir foto strip pengguna.
 
-### 5.2 Schema Tabel `frames` (Manajemen Frame Dinamis)
+```sql
+-- Storage Policies untuk Bucket photobooth_images
+CREATE POLICY "Allow public insert photobooth_images"
+ON storage.objects
+FOR INSERT
+TO public
+WITH CHECK (bucket_id = 'photobooth_images');
+
+CREATE POLICY "Allow public select photobooth_images"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'photobooth_images');
+```
+
+### 5.2 Schema Tabel `frames` & RLS
 
 ```sql
 CREATE TABLE IF NOT EXISTS public.frames (
@@ -113,11 +128,20 @@ CREATE TABLE IF NOT EXISTS public.frames (
   status SMALLINT DEFAULT 1 CHECK (status IN (0, 1)),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Aktifkan RLS & Kebijakan SELECT Publik Tunggal
+ALTER TABLE public.frames ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public frames are viewable by everyone"
+ON public.frames
+FOR SELECT
+TO public
+USING (true);
 ```
 
 > **Catatan Dynamic Slots:** Jumlah elemen dalam array `slots` menentukan jumlah jepretan foto secara otomatis. Jika array berisi 2 slot, sesi foto akan otomatis mengambil 2 foto; jika 3 slot, mengambil 3 foto.
 
-### 5.3 Schema Tabel `photos` (Riwayat Foto Pengguna)
+### 5.3 Schema Tabel `photos` & RLS
 
 ```sql
 CREATE TABLE IF NOT EXISTS public.photos (
@@ -127,11 +151,29 @@ CREATE TABLE IF NOT EXISTS public.photos (
   photo_count INTEGER DEFAULT 3,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Aktifkan RLS & Kebijakan INSERT / SELECT
+ALTER TABLE public.photos ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public insert to photos"
+ON public.photos
+FOR INSERT
+TO public
+WITH CHECK (
+  image_url IS NOT NULL 
+  AND length(image_url) > 5
+);
+
+CREATE POLICY "Allow public select on photos"
+ON public.photos
+FOR SELECT
+TO public
+USING (true);
 ```
 
 ### 5.4 Otomatisasi Hapus Foto & Pembersihan Storage (`pg_cron`)
 
-Untuk efisiensi penyimpanan dan perlindungan privasi pengguna, file foto dan record database dibatasi masa simpan maksimal 1 jam. Supabase `pg_cron` dan fungsi PL/pgSQL dieksekusi secara berkala setiap jam:
+Untuk efisiensi penyimpanan dan perlindungan privasi pengguna, file foto dan record database dibatasi masa simpan maksimal 1 jam. Supabase `pg_cron` dan fungsi PL/pgSQL dieksekusi secara berkala setiap jam dengan proteksi keamanan penuh (*hardened search_path & revoked public RPC*):
 
 ```sql
 -- 1. Aktifkan ekstensi pg_cron (jika belum)
@@ -140,9 +182,13 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 -- 2. Hapus jadwal cronjob lama agar tidak terjadi duplikasi/konflik
 SELECT cron.unschedule('auto-delete-expired-photobooth-images');
 
--- 3. REPLACE fungsi pembersih foto dengan versi perbaikan
+-- 3. Fungsi pembersih foto dengan search_path terkunci dan bypass trigger aman
 CREATE OR REPLACE FUNCTION public.delete_expired_photos()
-RETURNS void AS $$
+RETURNS void 
+LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = public, storage
+AS $$
 BEGIN
   -- Bypass trigger proteksi hapus (storage.protect_delete) secara aman
   SET LOCAL session_replication_role = 'replica';
@@ -156,9 +202,13 @@ BEGIN
   DELETE FROM public.photos
   WHERE created_at < NOW() - INTERVAL '1 hours';
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
--- 4. Jadwalkan kembali cronjob (Berjalan otomatis setiap 1 jam)
+-- 4. Cabut hak akses eksekusi publik (anon/authenticated) agar tidak bisa dipanggil via HTTP REST API
+REVOKE EXECUTE ON FUNCTION public.delete_expired_photos() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_expired_photos() TO postgres, service_role;
+
+-- 5. Jadwalkan kembali cronjob (Berjalan otomatis setiap 1 jam via user internal postgres)
 SELECT cron.schedule(
   'auto-delete-expired-photobooth-images',
   '0 * * * *', -- Berjalan setiap jam (menit ke-0)
@@ -201,9 +251,10 @@ SELECT cron.schedule(
 - **Pilih Frame Auto-Start (120 Detik):** Hook `useAutoReset` berdurasi 120 detik pada `FrameSelector`. Jika tidak ada interaksi sebelum waktu habis, sistem otomatis memilih frame pertama/aktif dan langsung berpindah ke sesi `MULTI_SHOT`.
 - **Hasil Foto Auto-Reset (60 Detik):** Hook `useAutoReset` berdurasi 60 detik pada `ResultView` untuk me-reset booth kembali ke **Halaman Welcome** jika pengunjung meninggalkan layar hasil.
 
-### 6.5 Pengambilan Foto & Dynamic Slots Handling
+### 6.5 Pengambilan Foto, Countdown 10 Detik & Dynamic Slots
 
 - **Sesi Multi-Shot Adaptif:** Jumlah sesi foto dihitung dari `selectedFrame.slots.length` (fallback ke 3).
+- **Hitung Mundur 10 Detik & Visual Alert Merah:** Setiap jepretan foto didahului animasi hitung mundur selama 10 detik (10..1). Saat waktu tersisa $\le 3$ detik (3, 2, 1), warna angka otomatis berubah dari putih menjadi **merah menyala** (`text-red-500`) dengan efek *drop-shadow glow* merah untuk memberi sinyal visual persiapan pose akhir.
 - **Garis Bantu Framing Dinamis:** Kotak panduan kamera (*framing guide*) menyesuaikan rasio dimensi `slots[currentShot - 1]` secara real-time pada setiap jepretan, memastikan subjek terbingkai presisi tanpa terpotong.
 - **Compositing Canvas Real-Time:** Foto diletakkan tepat pada koordinat (`x`, `y`, `width`, `height`) masing-masing slot dengan crop *object-fit: cover*, lalu di-overlay oleh gambar PNG frame.
 

@@ -19,7 +19,7 @@ export async function uploadPhotoStrip(blob: Blob): Promise<UploadPhotoResult> {
     .from('photobooth_images')
     .upload(filePath, blob, {
       contentType: 'image/png',
-      upsert: true,
+      upsert: false,
     });
 
   if (error) {

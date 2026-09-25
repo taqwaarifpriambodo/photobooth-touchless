@@ -114,7 +114,13 @@ export default function MultiShotOverlay({
                         exit={{ scale: 2, opacity: 0 }}
                         transition={{ duration: 0.4, ease: 'backOut' }}
                       >
-                        <div className="text-8xl sm:text-9xl font-black text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]">
+                        <div
+                          className={`text-8xl sm:text-9xl font-black transition-colors duration-200 ${
+                            countdown <= 3
+                              ? 'text-red-500 drop-shadow-[0_4px_24px_rgba(239,68,68,0.8)]'
+                              : 'text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]'
+                          }`}
+                        >
                           {countdown}
                         </div>
                       </motion.div>
@@ -131,7 +137,13 @@ export default function MultiShotOverlay({
                       exit={{ scale: 2, opacity: 0 }}
                       transition={{ duration: 0.5, ease: 'backOut' }}
                     >
-                      <div className="text-8xl sm:text-9xl font-black text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]">
+                      <div
+                        className={`text-8xl sm:text-9xl font-black transition-colors duration-200 ${
+                          countdown <= 3
+                            ? 'text-red-500 drop-shadow-[0_4px_24px_rgba(239,68,68,0.8)]'
+                            : 'text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]'
+                        }`}
+                      >
                         {countdown}
                       </div>
                       <p className="text-lg font-medium text-white/80 mt-2">
