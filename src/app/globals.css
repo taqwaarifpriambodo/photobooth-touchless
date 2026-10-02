@@ -25,18 +25,37 @@
 
 /* ===== Global Styles ===== */
 
-* {
-  cursor: none !important; /* Hide default cursor for touchless UX */
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  user-select: none;
-  -webkit-user-select: none;
+}
+
+/* Sembunyikan default mouse cursor HANYA saat berada di dalam area touchless photobooth */
+.camera-container,
+.camera-container * {
+  cursor: none !important;
+}
+
+/* Pastikan kursor konvensional bekerja normal pada form login dan tombol biasa */
+.conventional-cursor,
+.conventional-cursor * {
+  cursor: auto;
+}
+
+.conventional-cursor input,
+.conventional-cursor textarea {
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.conventional-cursor button,
+.conventional-cursor [role="button"],
+.conventional-cursor a {
+  cursor: pointer !important;
 }
 
 /* ===== Fullscreen Camera Container ===== */

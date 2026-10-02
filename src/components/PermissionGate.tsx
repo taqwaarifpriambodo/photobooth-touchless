@@ -17,7 +17,7 @@ export default function PermissionGate({
   onRequestPermission,
 }: PermissionGateProps) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center h-screen bg-[#0a0a0a]">
+    <div className="flex flex-col flex-1 items-center justify-center h-screen bg-[#0a0a0a] conventional-cursor">
       <motion.div
         className="glass-card p-12 text-center max-w-lg mx-4"
         initial={{ opacity: 0, scale: 0.9 }}
