@@ -48,16 +48,16 @@ export default function WelcomeScreen({
 
   return (
     <motion.div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-between p-6 sm:p-8 pointer-events-auto bg-black/60 backdrop-blur-md overflow-hidden"
+      className="absolute inset-0 z-20 flex flex-col items-center justify-between p-4 sm:p-6 md:p-8 pt-14 sm:pt-10 pb-6 sm:pb-8 pointer-events-auto bg-black/65 backdrop-blur-md overflow-y-auto sm:overflow-hidden no-scrollbar"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4 }}
     >
       {/* Top Header & Greeting */}
-      <div className="text-center mt-2 sm:mt-4 flex flex-col items-center max-w-2xl">
+      <div className="text-center flex flex-col items-center max-w-2xl shrink-0">
         <motion.div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs sm:text-sm font-semibold mb-3 tracking-wide"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] sm:text-xs md:text-sm font-semibold mb-1.5 sm:mb-3 tracking-wide"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -67,7 +67,7 @@ export default function WelcomeScreen({
         </motion.div>
 
         <motion.h1
-          className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight"
+          className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -76,7 +76,7 @@ export default function WelcomeScreen({
         </motion.h1>
 
         <motion.p
-          className="text-sm sm:text-base text-zinc-300 mt-2 max-w-lg leading-relaxed"
+          className="text-xs sm:text-sm md:text-base text-zinc-300 mt-1 sm:mt-2 max-w-xs sm:max-w-md md:max-w-lg leading-relaxed"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -87,7 +87,7 @@ export default function WelcomeScreen({
 
       {/* Quick Start Guide Cards */}
       <motion.div
-        className="w-full max-w-4xl my-auto grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 px-2"
+        className="w-full max-w-4xl my-auto py-2 grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 px-1 sm:px-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35, duration: 0.4 }}
@@ -95,24 +95,26 @@ export default function WelcomeScreen({
         {steps.map((step, idx) => (
           <div
             key={idx}
-            className="bg-zinc-900/80 border border-white/8 rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center shadow-lg transition-transform duration-200 hover:border-white/20"
+            className="bg-zinc-900/80 border border-white/8 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:p-5 flex flex-row md:flex-col items-center text-left md:text-center shadow-lg transition-transform duration-200 hover:border-white/20 gap-3 md:gap-0"
           >
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-zinc-800 flex items-center justify-center text-2xl sm:text-3xl mb-3 shadow-inner border border-white/5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-zinc-800 flex items-center justify-center text-xl sm:text-2xl md:text-3xl shrink-0 md:mb-3 shadow-inner border border-white/5">
               {step.icon}
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-              {step.title}
-            </h3>
-            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-              {step.desc}
-            </p>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-base md:text-lg font-bold text-white mb-0.5 sm:mb-1 truncate md:whitespace-normal">
+                {step.title}
+              </h3>
+              <p className="text-[11px] sm:text-xs md:text-sm text-zinc-400 leading-snug sm:leading-relaxed">
+                {step.desc}
+              </p>
+            </div>
           </div>
         ))}
       </motion.div>
 
       {/* Footer / Start CTA Button */}
       <motion.div
-        className="mb-6 sm:mb-10 flex flex-col items-center gap-3"
+        className="flex flex-col items-center gap-2 sm:gap-3 shrink-0"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
@@ -120,26 +122,26 @@ export default function WelcomeScreen({
         <button
           ref={startBtnRef}
           onClick={onStart}
-          className="relative group overflow-hidden px-12 py-5 sm:px-16 sm:py-6 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-xl sm:text-2xl shadow-xl shadow-amber-900/30 transition-all duration-200 hover:scale-[1.03] active:scale-95 flex items-center gap-4 cursor-pointer"
+          className="relative group overflow-hidden px-8 py-3 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-base sm:text-xl md:text-2xl shadow-xl shadow-amber-900/30 transition-all duration-200 hover:scale-[1.03] active:scale-95 flex items-center gap-3 sm:gap-4 cursor-pointer"
         >
           {/* Circular progress on confirm button when hovered */}
           {isHovered && (
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <svg className="w-10 h-10 -rotate-90 transform">
+            <div className="relative w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center shrink-0">
+              <svg className="w-7 h-7 sm:w-9 sm:h-9 -rotate-90 transform">
                 <circle
-                  cx="20"
-                  cy="20"
+                  cx="50%"
+                  cy="50%"
                   r={radius}
                   className="stroke-white/30"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   fill="transparent"
                 />
                 <circle
-                  cx="20"
-                  cy="20"
+                  cx="50%"
+                  cy="50%"
                   r={radius}
                   className="stroke-white transition-all duration-75"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   fill="transparent"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
@@ -152,7 +154,7 @@ export default function WelcomeScreen({
           <span>Mulai Sekarang ✨</span>
 
           <svg
-            className="w-6 h-6 transition-transform group-hover:translate-x-1"
+            className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform group-hover:translate-x-1 shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -166,7 +168,7 @@ export default function WelcomeScreen({
           </svg>
         </button>
 
-        <p className="text-xs text-zinc-400">
+        <p className="text-[11px] sm:text-xs text-zinc-400 text-center px-4">
           Tunjuk tombol di atas dengan telunjuk ☝️ dan tahan selama 1.5 detik
         </p>
       </motion.div>

@@ -124,18 +124,18 @@ export default function Home() {
               </motion.div>
             )}
 
-            {/* Hand tracking status pill (Top Right corner) */}
+            {/* Hand tracking status pill */}
             {!isModelLoading && (appState === 'WELCOME' || appState === 'FRAME_SELECTION') && (
-              <div className="absolute top-6 right-6 z-30 flex justify-end pointer-events-none">
+              <div className="absolute top-3 sm:top-6 left-0 right-0 sm:left-auto sm:right-6 z-30 flex justify-center sm:justify-end pointer-events-none px-4">
                 <motion.div
-                  className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg text-xs flex items-center gap-2.5 border border-white/8"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-black/75 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full sm:rounded-lg text-[11px] sm:text-xs flex items-center gap-2 border border-white/10 shadow-lg max-w-[92vw] truncate"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
                 >
                   {isHandDetected ? (
                     <>
-                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-zinc-200 font-medium">
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      <span className="text-zinc-200 font-medium truncate">
                         {appState === 'WELCOME'
                           ? 'Telunjuk Terdeteksi — Tunjuk Mulai ☝️'
                           : 'Telunjuk Terdeteksi — Tunjuk Frame ☝️'}
@@ -144,8 +144,8 @@ export default function Home() {
                   ) : (
                     <>
                       <motion.span
-                        className="text-base"
-                        animate={{ y: [0, -4, 0] }}
+                        className="text-sm shrink-0"
+                        animate={{ y: [0, -3, 0] }}
                         transition={{
                           duration: 1.5,
                           repeat: Infinity,
@@ -154,7 +154,7 @@ export default function Home() {
                       >
                         ☝️
                       </motion.span>
-                      <span className="text-zinc-400">
+                      <span className="text-zinc-400 truncate">
                         Tunjuk dengan jari telunjuk ☝️ di depan kamera
                       </span>
                     </>
