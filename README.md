@@ -6,9 +6,10 @@ Aplikasi **Web Photo Booth Touchless** interaktif dan higienis berbasis AI Compu
 
 ## ✨ Fitur Unggulan
 
+- 🔐 **Operator Authentication Gate:** Gerbang login terintegrasi Supabase Auth untuk mengamankan akses photobooth khusus bagi operator/admin terdaftar sebelum kamera dan booth diaktifkan.
 - 🖐️ **Kontrol Touchless Penuh:** Navigasi kursor virtual menggunakan telunjuk (*MediaPipe Hand Landmarker*) dengan *Double Exponential Smoothing* & *Dwell Timer* (1.5 detik).
-- ✨ **Halaman Welcome & Quick Start Guide:** Menyambut pengunjung dengan panduan visual 3 langkah mudah sebelum mulai.
-- 🎨 **Galeri Frame Dinamis:** Menampilkan 6 frame per halaman dalam grid 3x2, tombol navigasi `❮` `❯`, serta auto-start timer 2 menit.
+- ✨ **Halaman Welcome & Quick Start Guide:** Menyambut pengunjung dengan panduan visual 3 langkah mudah sebelum mulai, dilengkapi tombol logout operator yang diskrit.
+- 🎨 **Galeri Frame Dinamis:** Menampilkan frame dalam grid responsif (1 kolom di HP, 3 kolom di desktop), tombol navigasi `❮` `❯`, serta auto-start timer 2 menit.
 - 📸 **Sesi Foto Multi-Shot Dinamis:**
   - Jumlah jepretan otomatis mengikuti jumlah slot frame (misal 2 atau 3 foto).
   - Countdown **10 detik** per jepretan dengan indikator **angka merah menyala pada $\le 3$ detik terakhir**.
@@ -25,7 +26,7 @@ Aplikasi **Web Photo Booth Touchless** interaktif dan higienis berbasis AI Compu
 - **Frontend:** [Next.js](https://nextjs.org/) 16 (App Router, React 19, TypeScript)
 - **Computer Vision:** [@mediapipe/tasks-vision](https://developers.google.com/mediapipe) (Hand Landmarker via WebAssembly)
 - **Styling & Animasi:** [Tailwind CSS v4](https://tailwindcss.com/) & [Framer Motion](https://www.framer.com/motion/)
-- **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, Storage Buckets, Row Level Security, pg_cron)
+- **Backend & Database:** [Supabase](https://supabase.com/) (Auth, PostgreSQL, Storage Buckets, Row Level Security, pg_cron)
 - **QR Code:** `qrcode.react`
 
 ---
@@ -35,7 +36,7 @@ Aplikasi **Web Photo Booth Touchless** interaktif dan higienis berbasis AI Compu
 Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal:
 
 ### 1. Prasyarat Sistem
-- **Node.js**: Versi 18.18+ atau Node.js 20+ ([Download Node.js](https://nodejs.org/))
+- **Node.js**: Versi 22.x LTS direkomendasikan ([Download Node.js](https://nodejs.org/))
 - **Webcam / Kamera**: Laptop camera atau USB webcam yang berfungsi normal
 - **Browser Modern**: Google Chrome, Microsoft Edge, atau browser Chromium lainnya
 - **Akun Supabase**: Akun gratis di [supabase.com](https://supabase.com/)
@@ -173,7 +174,26 @@ SELECT cron.schedule(
 
 ---
 
-### 4. Konfigurasi Environment Variables
+### 4. Konfigurasi Autentikasi Operator (Supabase Auth)
+
+Untuk mengamankan akses aplikasi photobooth agar hanya dapat dioperasikan oleh operator terdaftar:
+
+1. **Aktifkan Email Provider:**
+   - Di [Supabase Dashboard](https://app.supabase.com/), buka menu **Authentication** $\rightarrow$ **Providers**.
+   - Pastikan provider **Email** berstatus **Enabled**.
+2. **Matikan Konfirmasi Email (Disarankan):**
+   - Buka **Authentication** $\rightarrow$ **Providers** $\rightarrow$ klik **Email**.
+   - Nonaktifkan opsi **"Confirm email"** (agar akun operator yang dibuat dapat langsung digunakan login tanpa perlu mengklik link verifikasi email).
+   - Klik **Save**.
+3. **Buat Akun Operator Pertama:**
+   - Buka menu **Authentication** $\rightarrow$ **Users**.
+   - Klik tombol **Add User** $\rightarrow$ pilih **Create User**.
+   - Masukkan **Email** (contoh: `operator@booth.com`) dan **Password**.
+   - Klik **Create User**.
+
+---
+
+### 5. Konfigurasi Environment Variables
 
 Buat file bernama `.env.local` di root directory proyek, lalu isi dengan kredensial dari **Supabase Dashboard** $\rightarrow$ **Project Settings** $\rightarrow$ **API**:
 
@@ -184,7 +204,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
 
 ---
 
-### 5. Menjalankan Aplikasi
+### 6. Menjalankan Aplikasi
 
 Jalankan development server:
 
@@ -192,19 +212,23 @@ Jalankan development server:
 npm run dev
 ```
 
-Buka browser dan akses [http://localhost:3000](http://localhost:3000). Saat diminta izin webcam, klik **"Allow" / "Izinkan"**.
+1. Buka browser dan akses [http://localhost:3000](http://localhost:3000).
+2. Layar akan menampilkan form **Masuk Operator**. Masukkan email & kata sandi operator yang telah dibuat di Supabase.
+3. Setelah login berhasil, aplikasi akan meminta izin akses kamera webcam. Klik **"Allow" / "Izinkan"**.
+4. Halaman **Welcome Touchless** siap digunakan oleh pengunjung acara!
 
 ---
 
 ## 🖐️ Cara Penggunaan (Touchless Guide)
 
-1. **Arahkan Jari Telunjuk:** Berdiri di depan kamera (jarak ideal 1–2 meter) dan tunjuk ke arah kamera dengan jari telunjuk ☝️ untuk menggerakkan kursor di layar.
-2. **Tahan Kursor (*Dwell Timer*):** Untuk memilih frame atau menekan tombol, posisikan kursor di atas elemen dan **tahan selama 1.5 detik** sampai lingkaran progres penuh.
-3. **Sesi Foto:**
-   - Amati garis bantu di layar agar posisi tubuh & wajah pas di dalam slot.
+1. **Login Operator:** Operator memasukkan email & password di awal sesi untuk mengaktifkan photobooth.
+2. **Arahkan Jari Telunjuk:** Pengunjung berdiri di depan kamera (jarak ideal 1–2 meter) dan menunjuk dengan jari telunjuk ☝️ untuk menggerakkan kursor di layar.
+3. **Tahan Kursor (*Dwell Timer*):** Untuk memilih tombol atau frame, posisikan kursor di atas elemen dan **tahan selama 1.5 detik** sampai lingkaran progres penuh.
+4. **Sesi Foto:**
+   - Amati garis bantu (*framing guide*) di layar agar posisi tubuh & wajah pas di dalam slot frame.
    - Hitung mundur berjalan selama **10 detik**. Bersiaplah saat angka berubah menjadi **merah (3, 2, 1)**.
    - Layar akan berkedip putih (*flash*) saat foto diambil.
-4. **Download Foto:**
+5. **Download Foto:**
    - Scan QR Code di layar menggunakan kamera smartphone Anda.
    - File foto strip langsung terunduh. Link QR Code berlaku selama **1 jam**.
    - Tekan tombol **"Selesai & Kembali ✨"** atau tunggu 60 detik untuk auto-reset.
@@ -222,18 +246,20 @@ photobooth-touchless/
 │   │   ├── api/frames/         # API Route untuk memuat template frame dari Supabase
 │   │   ├── globals.css         # Styling global Tailwind v4 & tema warna
 │   │   ├── layout.tsx          # Root Layout Next.js
-│   │   └── page.tsx            # Main State Machine & Coordinator
+│   │   └── page.tsx            # Main State Machine & Coordinator (Auth, Camera, Booth)
 │   ├── components/
-│   │   ├── WelcomeScreen.tsx   # Halaman greeting & quick start guide
-│   │   ├── FrameSelector.tsx   # Galeri 6 frame/page & timer 2 menit
-│   │   ├── FrameCard.tsx       # Kartu frame dengan radial dwell timer
+│   │   ├── LoginGate.tsx       # Form login operator terintegrasi Supabase Auth
+│   │   ├── WelcomeScreen.tsx   # Halaman greeting, quick start guide & operator logout
+│   │   ├── FrameSelector.tsx   # Galeri frame (1 kolom mobile / 3 kolom desktop) & timer 2m
+│   │   ├── FrameCard.tsx       # Kartu frame dengan radial dwell timer responsif
 │   │   ├── NavDwellButton.tsx  # Tombol navigasi touchless Prev/Next
 │   │   ├── MultiShotOverlay.tsx# Overlay countdown 10s & garis bantu framing
-│   │   ├── ResultView.tsx      # Preview hasil, QR Code & auto-reset 60s
+│   │   ├── ResultView.tsx      # Preview hasil foto strip, QR Code & auto-reset 60s
 │   │   ├── VirtualCursor.tsx   # Kursor virtual telunjuk real-time
 │   │   ├── CameraView.tsx      # WebCam fullscreen container (mirrored)
 │   │   └── PermissionGate.tsx  # UI permintaan izin kamera awal
 │   ├── hooks/
+│   │   ├── useAuth.ts          # Hook manajemen autentikasi & sesi operator Supabase
 │   │   ├── useCamera.ts        # Hook manajemen stream webcam
 │   │   ├── useHandTracking.ts  # Hook MediaPipe WASM & smoothing koordinat
 │   │   ├── useDwellTimer.ts    # Hook deteksi hover dwell time touchless
@@ -244,10 +270,11 @@ photobooth-touchless/
 │   │   ├── photoCompositor.ts  # Engine penggabung foto Blob + Frame PNG Canvas
 │   │   ├── storage.ts          # Integrasi upload & Signed URL Supabase Storage
 │   │   ├── db.ts               # Integrasi pencatatan database Supabase
+│   │   ├── supabase.ts         # Inisialisasi Supabase JS Client
 │   │   └── frameConfig.ts      # Definisi koordinat slot & template frame fallback
 │   └── types/
-│       └── index.ts            # TypeScript interfaces & types
-├── PRD_Photoboot_Touchless.md  # Dokumen Spesifikasi Produk (PRD) Lengkap
+│       └── index.ts            # TypeScript interfaces & types (AppState AUTH..RESULT)
+├── PRD_Photoboot_Touchless.md  # Dokumen Spesifikasi Produk (PRD) Lengkap v2.6
 ├── package.json
 └── README.md
 ```
@@ -256,6 +283,8 @@ photobooth-touchless/
 
 ## 🔒 Kebijakan Keamanan & Privasi
 
-- **Client-Side AI:** Pelacakan tangan diproses 100% di browser pengguna via WebAssembly (WASM), tidak ada video mentah yang dikirim ke server.
+- **Operator Authentication:** Seluruh akses kamera dan photobooth diproteksi oleh Supabase Auth berbasis token JWT terenkripsi dengan manajemen sesi lokal otomatis.
+- **Client-Side AI:** Pelacakan tangan diproses 100% di browser pengguna via WebAssembly (WASM), tidak ada feed video mentah yang dikirim ke server.
 - **Row Level Security (RLS):** Seluruh tabel database Supabase diproteksi dengan RLS tervalidasi.
 - **Auto-Delete Policy:** Foto yang tersimpan di server Supabase Storage dan database otomatis dihapus bersih setelah 1 jam oleh `pg_cron`.
+
