@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface LoginGateProps {
-  onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  onLogin: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   error: string | null;
   isLoading: boolean;
   onClearError: () => void;
@@ -16,14 +19,47 @@ export default function LoginGate({
   isLoading,
   onClearError,
 }: LoginGateProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const displayError = localError || error;
+
+  const handleClear = () => {
+    setLocalError(null);
+    onClearError();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || isLoading) return;
-    await onLogin(email, password);
+    if (isLoading) return;
+
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
+      setLocalError("Silakan masukkan alamat email.");
+      return;
+    }
+
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      setLocalError(
+        "Format email tidak valid. Masukkan email lengkap (contoh: operator@email.com).",
+      );
+      return;
+    }
+
+    if (!password) {
+      setLocalError("Silakan masukkan kata sandi.");
+      return;
+    }
+
+    setLocalError(null);
+    onClearError();
+    const result = await onLogin(cleanEmail, password);
+    if (!result.success) {
+      setLocalError(result?.error || "Email atau kata sandi salah. Silakan periksa kembali.");
+    }
   };
 
   return (
@@ -36,7 +72,7 @@ export default function LoginGate({
         className="w-full max-w-md bg-zinc-900/90 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl relative z-10"
         initial={{ opacity: 0, scale: 0.94, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
       >
         {/* Top Header Branding */}
         <div className="flex flex-col items-center text-center mb-6 sm:mb-8">
@@ -44,7 +80,7 @@ export default function LoginGate({
             className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 p-0.5 shadow-lg shadow-amber-600/20 mb-3 flex items-center justify-center"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 12, stiffness: 200 }}
+            transition={{ type: "spring", damping: 12, stiffness: 200 }}
           >
             <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center text-2xl sm:text-3xl">
               📸
@@ -59,41 +95,67 @@ export default function LoginGate({
             Masuk Operator
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xs">
-            Silakan masuk dengan akun yang terdaftar untuk mengaktifkan photobooth.
+            Silakan masuk dengan akun yang terdaftar untuk mengakses photobooth.
           </p>
         </div>
 
-        {/* Error Alert Message */}
-        {error && (
+        {/* Error Alert Message with Shake Animation */}
+        {displayError && (
           <motion.div
-            className="mb-5 p-3 sm:p-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
+            key={displayError}
+            className="mb-5 p-3.5 sm:p-4 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs flex items-start gap-3 shadow-lg shadow-red-950/30"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              x: [-10, 10, -7, 7, -3, 3, 0],
+            }}
+            transition={{ duration: 0.4 }}
           >
-            <span className="text-base shrink-0">⚠️</span>
-            <div className="flex-1 leading-snug">{error}</div>
+            <span className="text-base shrink-0 mt-0.5">⚠️</span>
+            <div className="flex-1">
+              <p className="font-bold text-red-300 mb-0.5">Gagal Masuk</p>
+              <p className="text-red-200/90 leading-relaxed">{displayError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-red-400 hover:text-red-200 text-sm p-0.5 transition-colors cursor-pointer shrink-0"
+              title="Tutup pesan"
+            >
+              ✕
+            </button>
           </motion.div>
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Email Input */}
           <div>
             <label className="block text-xs font-semibold text-zinc-300 mb-1.5 ml-1">
-              Email Operator
+              Email
             </label>
             <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-zinc-400 text-sm">✉️</span>
+              <span className="absolute left-3.5 text-zinc-400 text-sm">
+                ✉️
+              </span>
               <input
-                type="email"
-                required
+                type="text"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (error) onClearError();
+                  if (displayError) handleClear();
                 }}
                 placeholder="nama@email.com"
-                className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-white/10 focus:border-amber-500 rounded-xl text-sm text-white placeholder-zinc-500 outline-none transition-colors"
+                className={`w-full pl-10 pr-4 py-3 bg-zinc-950/80 rounded-xl text-sm text-white placeholder-zinc-500 outline-none transition-colors border ${
+                  displayError
+                    ? "border-red-500/50 focus:border-red-400"
+                    : "border-white/10 focus:border-amber-500"
+                }`}
               />
             </div>
           </div>
@@ -104,25 +166,31 @@ export default function LoginGate({
               Kata Sandi
             </label>
             <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-zinc-400 text-sm">🔒</span>
+              <span className="absolute left-3.5 text-zinc-400 text-sm">
+                🔒
+              </span>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error) onClearError();
+                  if (displayError) handleClear();
                 }}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-11 py-3 bg-zinc-950/80 border border-white/10 focus:border-amber-500 rounded-xl text-sm text-white placeholder-zinc-500 outline-none transition-colors"
+                className={`w-full pl-10 pr-11 py-3 bg-zinc-950/80 rounded-xl text-sm text-white placeholder-zinc-500 outline-none transition-colors border ${
+                  displayError
+                    ? "border-red-500/50 focus:border-red-400"
+                    : "border-white/10 focus:border-amber-500"
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 text-zinc-400 hover:text-zinc-200 text-sm p-1 transition-colors cursor-pointer"
-                title={showPassword ? 'Sembunyikan password' : 'Lihat password'}
+                title={showPassword ? "Sembunyikan password" : "Lihat password"}
               >
-                {showPassword ? '👁️' : '🙈'}
+                {showPassword ? "👁️" : "🙈"}
               </button>
             </div>
           </div>
@@ -150,7 +218,7 @@ export default function LoginGate({
         {/* Footer info */}
         <div className="mt-6 pt-4 border-t border-white/5 text-center">
           <p className="text-[11px] text-zinc-500">
-            Akses dibatasi khusus operator booth terdaftar.
+            Akses dibatasi khusus untuk akun terdaftar.
           </p>
         </div>
       </motion.div>

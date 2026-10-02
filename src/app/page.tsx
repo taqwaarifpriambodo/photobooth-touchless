@@ -21,7 +21,8 @@ export default function Home() {
   const {
     user,
     isAuthenticated,
-    isLoading: isAuthLoading,
+    isCheckingSession,
+    isLoggingIn,
     error: authError,
     login,
     logout,
@@ -72,7 +73,7 @@ export default function Home() {
 
   // Sync status autentikasi dengan appState
   useEffect(() => {
-    if (isAuthLoading) return;
+    if (isCheckingSession) return;
 
     if (!isAuthenticated) {
       setAppState('AUTH');
@@ -85,7 +86,7 @@ export default function Home() {
         }
       }
     }
-  }, [isAuthenticated, isAuthLoading, hasStream, appState]);
+  }, [isAuthenticated, isCheckingSession, hasStream, appState]);
 
   // Auto transition to WELCOME once camera stream is active (if authenticated)
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function Home() {
   }, [logout, resetSession]);
 
   // 1. Tampilan loading saat pertama kali memeriksa sesi Supabase
-  if (isAuthLoading) {
+  if (isCheckingSession) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0a] gap-4">
         <div className="w-10 h-10 border-3 border-zinc-800 border-t-amber-500 rounded-full animate-spin" />
@@ -147,7 +148,7 @@ export default function Home() {
       <LoginGate
         onLogin={login}
         error={authError}
-        isLoading={isAuthLoading}
+        isLoading={isLoggingIn}
         onClearError={clearAuthError}
       />
     );
