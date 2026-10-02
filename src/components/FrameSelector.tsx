@@ -74,26 +74,26 @@ export default function FrameSelector({
 
   return (
     <motion.div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-between p-4 sm:p-5 pointer-events-auto bg-black/50 backdrop-blur-sm overflow-hidden"
+      className="absolute inset-0 z-20 flex flex-col items-center justify-between p-3 sm:p-5 pt-14 sm:pt-6 pb-6 sm:pb-8 pointer-events-auto bg-black/60 backdrop-blur-sm overflow-y-auto sm:overflow-hidden no-scrollbar"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
       {/* Header */}
-      <div className="text-center mt-1 flex flex-col items-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+      <div className="text-center flex flex-col items-center shrink-0">
+        <h1 className="text-xl sm:text-3xl font-bold text-white tracking-tight">
           Pilih Frame
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-0.5 max-w-md mx-auto">
+        <p className="text-[11px] sm:text-sm text-zinc-400 mt-0.5 max-w-xs sm:max-w-md mx-auto">
           Tunjuk frame yang Anda inginkan dengan telunjuk ☝️ dan tahan selama 1.5 detik
         </p>
 
         {/* 2-Minute Auto-Start Countdown Badge */}
-        <div className="mt-1.5 flex items-center gap-2">
-          <span className="text-xs text-zinc-400">Otomatis mulai:</span>
+        <div className="mt-1 flex items-center gap-1.5 sm:gap-2">
+          <span className="text-[10px] sm:text-xs text-zinc-400">Otomatis mulai:</span>
           <span
-            className={`px-2.5 py-0.5 rounded-full text-xs font-semibold font-mono border transition-colors duration-300 ${
+            className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold font-mono border transition-colors duration-300 ${
               secondsLeft <= 10
                 ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse'
                 : 'bg-zinc-800/90 text-amber-400 border-white/10'
@@ -105,7 +105,7 @@ export default function FrameSelector({
       </div>
 
       {/* Frame Gallery with Navigation Arrows */}
-      <div className="w-full max-w-6xl my-auto flex items-center justify-between gap-2 sm:gap-4 px-2">
+      <div className="w-full max-w-5xl my-auto py-1 flex items-center justify-between gap-1.5 sm:gap-4 px-1 sm:px-2">
         {/* Left Arrow Button */}
         <NavDwellButton
           direction="prev"
@@ -115,11 +115,11 @@ export default function FrameSelector({
         />
 
         {/* Frames Grid */}
-        <div className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto">
+        <div className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto px-1 sm:px-2">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentPage}
-              className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5 w-full justify-items-center"
+              className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3.5 w-full justify-items-center"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
@@ -139,14 +139,14 @@ export default function FrameSelector({
 
           {/* Page Dots Indicator */}
           {totalPages > 1 && (
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-2 sm:mt-3">
               {Array.from({ length: totalPages }).map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                     idx === currentPage
-                      ? 'w-7 bg-amber-500'
-                      : 'w-2 bg-white/20'
+                      ? 'w-5 sm:w-7 bg-amber-500'
+                      : 'w-1.5 sm:w-2 bg-white/20'
                   }`}
                 />
               ))}
@@ -164,9 +164,9 @@ export default function FrameSelector({
       </div>
 
       {/* Footer / Confirm CTA */}
-      <div className="mb-4 sm:mb-8 flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-1.5 sm:gap-2 shrink-0">
         {selectedFrame && (
-          <p className="text-xs sm:text-sm text-zinc-400">
+          <p className="text-[11px] sm:text-sm text-zinc-400">
             Frame Terpilih:{' '}
             <span className="font-semibold text-white">{selectedFrame.name}</span>
           </p>
@@ -175,26 +175,26 @@ export default function FrameSelector({
         <button
           ref={confirmBtnRef}
           onClick={onConfirm}
-          className="relative group overflow-hidden px-10 py-4 sm:px-14 sm:py-5 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-lg sm:text-xl shadow-lg shadow-amber-900/30 transition-all duration-200 hover:scale-[1.03] active:scale-95 flex items-center gap-3 cursor-pointer"
+          className="relative group overflow-hidden px-8 py-3 sm:px-14 sm:py-5 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm sm:text-xl shadow-lg shadow-amber-900/30 transition-all duration-200 hover:scale-[1.03] active:scale-95 flex items-center gap-2.5 sm:gap-3 cursor-pointer"
         >
           {/* Circular progress on confirm button when hovered */}
           {isHovered && (
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <svg className="w-10 h-10 -rotate-90 transform">
+            <div className="relative w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center shrink-0">
+              <svg className="w-7 h-7 sm:w-10 sm:h-10 -rotate-90 transform">
                 <circle
-                  cx="20"
-                  cy="20"
+                  cx="50%"
+                  cy="50%"
                   r={radius}
                   className="stroke-white/30"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   fill="transparent"
                 />
                 <circle
-                  cx="20"
-                  cy="20"
+                  cx="50%"
+                  cy="50%"
                   r={radius}
                   className="stroke-white transition-all duration-75"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   fill="transparent"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
@@ -209,7 +209,7 @@ export default function FrameSelector({
           </span>
 
           <svg
-            className="w-6 h-6 transition-transform group-hover:translate-x-1"
+            className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:translate-x-1 shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
