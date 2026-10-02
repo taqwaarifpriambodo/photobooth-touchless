@@ -2,10 +2,12 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 import { useCamera } from '@/hooks/useCamera';
 import { useHandTracking } from '@/hooks/useHandTracking';
 import { useFrames } from '@/hooks/useFrames';
 import { useMultiShotSession } from '@/hooks/useMultiShotSession';
+import LoginGate from '@/components/LoginGate';
 import PermissionGate from '@/components/PermissionGate';
 import CameraView from '@/components/CameraView';
 import VirtualCursor from '@/components/VirtualCursor';
@@ -16,10 +18,20 @@ import ResultView from '@/components/ResultView';
 import type { AppState, FrameTemplate } from '@/types';
 
 export default function Home() {
-  const [appState, setAppState] = useState<AppState>('PERMISSION');
+  const {
+    user,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    error: authError,
+    login,
+    logout,
+    clearError: clearAuthError,
+  } = useAuth();
+
+  const [appState, setAppState] = useState<AppState>('AUTH');
   const [compositedBlob, setCompositedBlob] = useState<Blob | null>(null);
 
-  const { videoRef, stream, isReady, error, requestPermission } = useCamera();
+  const { videoRef, stream, isReady, error: cameraError, requestPermission } = useCamera();
   const {
     cursorPosition,
     isHandDetected,
@@ -58,12 +70,29 @@ export default function Home() {
 
   const hasStream = stream !== null;
 
-  // Auto transition to WELCOME once camera stream is active
+  // Sync status autentikasi dengan appState
   useEffect(() => {
-    if (hasStream && appState === 'PERMISSION') {
+    if (isAuthLoading) return;
+
+    if (!isAuthenticated) {
+      setAppState('AUTH');
+    } else {
+      if (appState === 'AUTH') {
+        if (hasStream) {
+          setAppState('WELCOME');
+        } else {
+          setAppState('PERMISSION');
+        }
+      }
+    }
+  }, [isAuthenticated, isAuthLoading, hasStream, appState]);
+
+  // Auto transition to WELCOME once camera stream is active (if authenticated)
+  useEffect(() => {
+    if (isAuthenticated && hasStream && (appState === 'PERMISSION' || appState === 'AUTH')) {
       setAppState('WELCOME');
     }
-  }, [hasStream, appState]);
+  }, [hasStream, appState, isAuthenticated]);
 
   const handleRequestPermission = useCallback(() => {
     requestPermission();
@@ -94,13 +123,44 @@ export default function Home() {
     setAppState('WELCOME');
   }, [resetSession]);
 
+  const handleLogout = useCallback(async () => {
+    console.log('[App] Operator logging out...');
+    resetSession();
+    setCompositedBlob(null);
+    await logout();
+    setAppState('AUTH');
+  }, [logout, resetSession]);
+
+  // 1. Tampilan loading saat pertama kali memeriksa sesi Supabase
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0a] gap-4">
+        <div className="w-10 h-10 border-3 border-zinc-800 border-t-amber-500 rounded-full animate-spin" />
+        <p className="text-zinc-400 text-sm font-medium">Memeriksa sesi operator...</p>
+      </div>
+    );
+  }
+
+  // 2. Tampilan Form Login jika belum terautentikasi
+  if (!isAuthenticated || appState === 'AUTH') {
+    return (
+      <LoginGate
+        onLogin={login}
+        error={authError}
+        isLoading={isAuthLoading}
+        onClearError={clearAuthError}
+      />
+    );
+  }
+
+  // 3. Tampilan Photobooth jika sudah login
   return (
     <>
       <AnimatePresence mode="wait">
         {!hasStream && (
           <PermissionGate
             key="permission"
-            error={error}
+            error={cameraError}
             onRequestPermission={handleRequestPermission}
           />
         )}
@@ -169,6 +229,8 @@ export default function Home() {
                 key="welcome-screen"
                 cursorPositionRef={cursorPosition}
                 onStart={handleStartFromWelcome}
+                onLogout={handleLogout}
+                userEmail={user?.email}
               />
             )}
 
@@ -217,3 +279,4 @@ export default function Home() {
     </>
   );
 }
+

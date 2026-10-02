@@ -8,11 +8,15 @@ import { useDwellTimer } from '@/hooks/useDwellTimer';
 interface WelcomeScreenProps {
   cursorPositionRef: React.RefObject<Point2D | null>;
   onStart: () => void;
+  onLogout?: () => void;
+  userEmail?: string | null;
 }
 
 export default function WelcomeScreen({
   cursorPositionRef,
   onStart,
+  onLogout,
+  userEmail,
 }: WelcomeScreenProps) {
   const startBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -54,6 +58,22 @@ export default function WelcomeScreen({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4 }}
     >
+      {/* Discreet Operator Logout Pill (Top Left) */}
+      {onLogout && (
+        <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-30">
+          <button
+            onClick={onLogout}
+            title="Keluar Sesi Operator"
+            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/10 text-[10px] sm:text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>👤</span>
+            <span className="max-w-[120px] truncate hidden sm:inline">{userEmail || 'Operator'}</span>
+            <span className="text-zinc-500">|</span>
+            <span>Keluar 🚪</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Header & Greeting */}
       <div className="text-center flex flex-col items-center max-w-2xl shrink-0">
         <motion.div

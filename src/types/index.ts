@@ -1,6 +1,7 @@
 // ===== State Machine Types =====
 
 export type AppState =
+  | 'AUTH'
   | 'PERMISSION'
   | 'WELCOME'
   | 'CAMERA_READY'

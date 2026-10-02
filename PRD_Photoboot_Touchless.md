@@ -2,10 +2,10 @@
 
 # Touchless Web Photo Booth
 
-**Versi Document:** 2.5  
-**Status:** Complete / Production Ready (10s Countdown & Security Hardened)  
+**Versi Document:** 2.6  
+**Status:** Complete / Production Ready (Auth Gate & Mobile Optimized)  
 **Frontend Framework:** Next.js (App Router, React 19)  
-**Backend & Database:** Supabase (PostgreSQL, Storage, pg_cron)  
+**Backend & Database:** Supabase (Auth, PostgreSQL, Storage, pg_cron)  
 **AI Computer Vision:** MediaPipe Hand Landmarker  
 **Styling & UI:** Tailwind CSS v4 & Framer Motion (Clean Amber/Zinc Aesthetic)
 
@@ -262,3 +262,10 @@ SELECT cron.schedule(
 
 - **Signed URL Expiration:** Menggunakan method `supabase.storage.from('photobooth_images').createSignedUrl(path, 3600)` sehingga tautan unduhan QR Code hanya valid selama 60 menit (3600 detik).
 - **UI Alert Badge:** Menampilkan lencana warna amber pada halaman hasil (`ResultView`): `⏳ Link unduhan & QR Code berlaku selama 1 Jam`.
+
+### 6.7 Operator Authentication Gate & Session Lifecycle (Supabase Auth)
+
+- **Gerbang Akses Operator (`LoginGate`):** Sebelum pengunjung atau operator dapat mengakses kamera dan sesi foto, aplikasi dilindungi oleh form login terintegrasi Supabase Auth (`supabase.auth.signInWithPassword`).
+- **Pengecekan Sesi Otomatis (`useAuth`):** Aplikasi secara reaktif mendeteksi token JWT sesi yang tersimpan di browser (`supabase.auth.getSession()` dan `onAuthStateChange`). Jika sesi masih valid, photobooth langsung terbuka tanpa meminta login ulang saat halaman dimuat ulang (*refresh*).
+- **Discreet Operator Logout:** Terdapat tombol *logout* operator di pojok kiri atas Halaman Welcome yang memungkinkan operator mengakhiri sesi dan mengunci kembali photobooth saat acara selesai.
+- **Handling Error & Keamanan:** Pesan kesalahan login diformat ramah pengguna (*user-friendly error handling*) dan dilindungi enkripsi JWT standar industri Supabase.
