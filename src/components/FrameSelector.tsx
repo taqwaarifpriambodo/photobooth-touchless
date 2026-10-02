@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FrameTemplate, Point2D } from '@/types';
 import FrameCard from './FrameCard';
@@ -16,8 +16,6 @@ interface FrameSelectorProps {
   onConfirm: () => void;
 }
 
-const ITEMS_PER_PAGE = 6;
-
 export default function FrameSelector({
   frames,
   selectedFrame,
@@ -26,11 +24,24 @@ export default function FrameSelector({
   onConfirm,
 }: FrameSelectorProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const confirmBtnRef = useRef<HTMLButtonElement>(null);
 
-  const totalPages = Math.max(1, Math.ceil(frames.length / ITEMS_PER_PAGE));
-  const startIndex = currentPage * ITEMS_PER_PAGE;
-  const visibleFrames = frames.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  // Deteksi mode mobile untuk 1 item per baris (3 item per halaman di HP, 6 di desktop)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const itemsPerPage = isMobile ? 3 : 6;
+  const totalPages = Math.max(1, Math.ceil(frames.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages - 1);
+  const startIndex = safeCurrentPage * itemsPerPage;
+  const visibleFrames = frames.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -119,7 +130,7 @@ export default function FrameSelector({
           <AnimatePresence mode="wait">
             <motion.div
               key={currentPage}
-              className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3.5 w-full justify-items-center"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 w-full justify-items-center"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}

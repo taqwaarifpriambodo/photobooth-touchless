@@ -38,7 +38,7 @@ export default function FrameCard({
   return (
     <motion.div
       ref={cardRef}
-      className={`relative group cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 w-full max-w-[165px] sm:max-w-[220px] md:max-w-[260px] ${
+      className={`relative group cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 w-full max-w-[260px] sm:max-w-[220px] md:max-w-[260px] ${
         isSelected
           ? 'ring-2 ring-amber-500 shadow-lg shadow-amber-900/20 scale-[1.02]'
           : 'border border-white/8 hover:border-white/20'
@@ -47,23 +47,23 @@ export default function FrameCard({
       whileTap={{ scale: 0.98 }}
     >
       {/* Container aspect ratio matching horizontal 745x310 strip */}
-      <div className="relative w-full aspect-[745/380] bg-zinc-950 flex flex-col justify-between p-1.5 sm:p-2.5 overflow-hidden">
+      <div className="relative w-full aspect-[745/320] sm:aspect-[745/380] bg-zinc-950 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden">
         {/* Frame preview image */}
-        <div className="relative w-full flex-1 rounded-lg overflow-hidden flex items-center justify-center min-h-[46px] sm:min-h-[70px]">
+        <div className="relative w-full flex-1 rounded-lg overflow-hidden flex items-center justify-center min-h-[56px] sm:min-h-[70px]">
           <Image
             src={frame.publicUrl || `/frames/${frame.file}`}
             alt={frame.name}
             fill
             className="object-contain p-0.5 sm:p-1"
-            sizes="(max-width: 640px) 150px, 260px"
+            sizes="(max-width: 640px) 260px, 260px"
             unoptimized={!!frame.publicUrl}
             priority
           />
         </div>
 
         {/* Frame Label */}
-        <div className="text-center pt-0.5 sm:pt-1">
-          <p className="text-[10px] sm:text-xs md:text-sm font-medium text-zinc-200 truncate px-1">
+        <div className="text-center pt-1">
+          <p className="text-[11px] sm:text-xs md:text-sm font-semibold text-zinc-200 truncate px-1">
             {frame.name}
           </p>
         </div>
