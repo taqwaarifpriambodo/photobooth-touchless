@@ -72,6 +72,27 @@ Aplikasi **Web Photo Booth Touchless** modern, higienis, dan ramah pengguna berb
 
 ---
 
+## 📸 Tangkapan Layar Antarmuka (UI Preview)
+
+Berikut adalah visualisasi antarmuka aplikasi dari setiap tahapan alur pengguna (*user flow*):
+
+| 🔐 1. Masuk Operator (`LoginGate`) | 📷 2. Izin Akses Kamera (`PermissionGate`) |
+| :---: | :---: |
+| ![Masuk Operator](docs/img/login_page.png) | ![Izin Akses Kamera](docs/img/camera_permission_page.png) |
+| *Gerbang login operator terproteksi Supabase Auth* | *Layar permintaan izin akses webcam otomatis* |
+
+| ✨ 3. Halaman Welcome (`WelcomeScreen`) | 🎨 4. Pemilihan Frame (`FrameSelector`) |
+| :---: | :---: |
+| ![Halaman Welcome](docs/img/welcome_page.png) | ![Pemilihan Frame](docs/img/seelct_frame_page.png) |
+| *Greeting, 3 langkah panduan touchless & logout* | *Galeri 6 frame per page & timer auto-start 2 menit* |
+
+| 📸 5. Sesi Foto & Countdown (`MultiShotOverlay`) | 📲 6. Layar Hasil & QR Code (`ResultView`) |
+| :---: | :---: |
+| ![Sesi Foto Multi-Shot](docs/img/take_photo_page.png) | ![Hasil & QR Code Download](docs/img/done_page.png) |
+| *Kotak garis bantu framing dinamis & hitung mundur 10s* | *Preview foto strip komposit & QR Code Signed URL 1 jam* |
+
+---
+
 ## 🔄 Alur State Machine Aplikasi
 
 ```
