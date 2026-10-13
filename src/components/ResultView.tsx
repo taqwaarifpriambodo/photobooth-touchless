@@ -38,13 +38,29 @@ export default function ResultView({
     onReset: onFinish,
   });
 
-  const localImageUrl = compositedImageBlob
-    ? URL.createObjectURL(compositedImageBlob)
-    : null;
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+  const hasUploadedRef = useRef(false);
 
-  // Auto Upload Blob saat komponen pertama kali dirender
+  // Buat Object URL hanya SEKALI agar gambar tidak dibuat ulang setiap frame (mencegah foto berkedip-kedip)
   useEffect(() => {
-    if (!compositedImageBlob || signedUrl || isUploading) return;
+    if (!compositedImageBlob) {
+      setLocalImageUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(compositedImageBlob);
+    setLocalImageUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [compositedImageBlob]);
+
+  // Auto Upload Blob ke Supabase hanya SEKALI (dicegah duplikat dengan hasUploadedRef)
+  useEffect(() => {
+    if (!compositedImageBlob || hasUploadedRef.current) return;
+
+    hasUploadedRef.current = true;
 
     async function handleUpload() {
       try {
@@ -64,6 +80,7 @@ export default function ResultView({
           selectedFrame?.slots?.length || 3,
         );
       } catch (err) {
+        hasUploadedRef.current = false; // Reset agar bisa retry jika gagal
         const error = err as Error;
         console.error("[ResultView] Upload error:", error);
         setUploadError(error.message || "Gagal mengunggah foto");
@@ -73,7 +90,7 @@ export default function ResultView({
     }
 
     handleUpload();
-  }, [compositedImageBlob, signedUrl, isUploading, selectedFrame]);
+  }, [compositedImageBlob, selectedFrame]);
 
   // Touchless Dwell Timer: Selesai & Kembali 🏁
   const { progress: finishProgress, isHovered: isFinishHovered } =
@@ -91,6 +108,7 @@ export default function ResultView({
     elementRef: retryBtnRef,
     durationMs: 1500,
     onComplete: () => {
+      hasUploadedRef.current = false;
       setSignedUrl(null);
       setUploadError(null);
     },
@@ -129,7 +147,15 @@ export default function ResultView({
       <div className="w-full max-w-5xl my-auto py-2 flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-8 px-2 sm:px-4">
         {/* Top/Left Column: Composited Photo Strip Preview */}
         <div className="w-full max-w-sm sm:max-w-md md:flex-1 flex flex-col items-center justify-center">
-          <div className="relative w-full aspect-[745/310] rounded-xl bg-zinc-900/90 border border-white/10 shadow-lg overflow-hidden flex items-center justify-center">
+          <div
+            className="relative w-full max-h-[55vh] rounded-xl bg-zinc-900/90 border border-white/10 shadow-lg overflow-hidden flex items-center justify-center"
+            style={{
+              aspectRatio:
+                selectedFrame && selectedFrame.canvasWidth && selectedFrame.canvasHeight
+                  ? `${selectedFrame.canvasWidth} / ${selectedFrame.canvasHeight}`
+                  : '745 / 310',
+            }}
+          >
             {localImageUrl ? (
               <Image
                 src={localImageUrl}

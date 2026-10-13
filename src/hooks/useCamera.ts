@@ -92,38 +92,78 @@ export function useCamera(): UseCameraReturn {
     };
   }, [requestPermission]);
 
-  // Attach stream ke video element secara reaktif
+  // Attach stream ke video element secara reaktif & aman terhadap AbortError
   useEffect(() => {
     if (!stream) return;
 
+    let isMounted = true;
+    let timer: NodeJS.Timeout | null = null;
+
     const attachStream = () => {
+      if (!isMounted) return;
       const video = videoRef.current;
       if (!video) {
-        const timer = setTimeout(attachStream, 100);
-        return () => clearTimeout(timer);
+        timer = setTimeout(attachStream, 100);
+        return;
       }
 
-      console.log('[Camera] Attaching stream to video element...');
-      video.srcObject = stream;
-      video.onloadedmetadata = () => {
-        video
-          .play()
-          .then(() => {
-            console.log(
-              '[Camera] ✅ Video playing!',
-              video.videoWidth,
-              'x',
-              video.videoHeight
-            );
-            setIsReady(true);
-          })
-          .catch((err) => {
-            console.error('[Camera] ❌ Play failed:', err);
-          });
+      // Hindari reset media pipeline jika stream yang dipasang sudah sama persis
+      if (video.srcObject !== stream) {
+        console.log('[Camera] Attaching stream to video element...');
+        video.srcObject = stream;
+      }
+
+      const tryPlay = () => {
+        if (!isMounted) return;
+        if (video.paused) {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                if (isMounted) {
+                  console.log(
+                    '[Camera] ✅ Video playing!',
+                    video.videoWidth,
+                    'x',
+                    video.videoHeight
+                  );
+                  setIsReady(true);
+                }
+              })
+              .catch((err: unknown) => {
+                // AbortError dan NotAllowedError adalah hal lumrah saat interupsi media
+                if (
+                  err instanceof Error &&
+                  (err.name === 'AbortError' || err.name === 'NotAllowedError')
+                ) {
+                  return;
+                }
+                console.error('[Camera] ❌ Play failed:', err);
+              });
+          }
+        } else {
+          setIsReady(true);
+        }
       };
+
+      if (video.readyState >= 1) {
+        tryPlay();
+      } else {
+        video.onloadedmetadata = () => {
+          tryPlay();
+        };
+      }
     };
 
     attachStream();
+
+    return () => {
+      isMounted = false;
+      if (timer) clearTimeout(timer);
+      if (videoRef.current) {
+        videoRef.current.onloadedmetadata = null;
+      }
+    };
   }, [stream]);
 
   // Cleanup: stop semua tracks saat unmount

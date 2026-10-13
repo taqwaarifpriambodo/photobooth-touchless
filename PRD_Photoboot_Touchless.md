@@ -2,8 +2,8 @@
 
 # Touchless Web Photo Booth
 
-**Versi Document:** 2.6  
-**Status:** Complete / Production Ready (Auth Gate & Mobile Optimized)  
+**Versi Document:** 3.0  
+**Status:** Complete / Production Ready (Frame Admin Management & Dynamic Sizing)  
 **Frontend Framework:** Next.js (App Router, React 19)  
 **Backend & Database:** Supabase (Auth, PostgreSQL, Storage, pg_cron)  
 **AI Computer Vision:** MediaPipe Hand Landmarker  
@@ -13,103 +13,108 @@
 
 ## 1. Tujuan Produk
 
-Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan ramah pengguna melalui antarmuka _touchless_ (tanpa sentuhan fisik). Aplikasi memanfaatkan kamera webcam dan pelacakan tangan berbasis AI (_hand tracking_) untuk menggantikan fungsi klik mouse atau sentuhan layar.
+Menciptakan aplikasi _web-based photo booth_ yang interaktif, higienis, dan ramah pengguna melalui antarmuka _touchless_ (tanpa sentuhan fisik). Aplikasi memanfaatkan kamera webcam dan pelacakan tangan berbasis AI (_hand tracking_) untuk menggantikan fungsi klik mouse atau sentuhan layar pada alur pengunjung, serta menyediakan antarmuka khusus Administrator (`/admin/frames`) untuk mengelola katalog frame secara dinamis tanpa batasan ukuran statis.
 
 ---
 
 ## 2. Target Pengguna & Kasus Penggunaan
 
-- **Target Pengguna:** Pengunjung acara (_event/exhibition_), pengguna _pop-up booth_, atau pengguna umum yang ingin mengambil foto secara mandiri.
-- **Skenario Penggunaan:**
-  1. Pengunjung berdiri di depan layar photo booth. Kamera aktif secara otomatis jika izin kamera sudah pernah diberikan.
-  2. Layar menampilkan **Halaman Welcome** berisi salam pembuka (_greeting_), 3 langkah panduan cepat (_quick start guide_), dan tombol touchless "Mulai Sekarang ✨".
-  3. Pengunjung mengarahkan jari telunjuk ke kamera untuk menggerakkan kursor virtual, lalu menahan kursor di tombol "Mulai Sekarang ✨" selama 1.5 detik (_dwell time_).
-  4. Pengunjung memilih salah satu frame dari galeri paginasi (**6 frame per halaman** dalam grid 3x2 yang responsif dengan tombol navigasi touchless `❮` `❯`).
-  5. Halaman pemilihan frame dilengkapi **timer otomatis 2 menit (120 detik)**. Jika pengunjung tidak menekan tombol dalam 2 menit, sistem otomatis memulai sesi foto dengan frame default.
-  6. Pengunjung mengonfirmasi pilihan dengan menahan kursor (_dwell time_ 1.5 detik) di tombol "Mulai Foto (Nx Take)".
-  7. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot frame (misal 2 atau 3 jepretan) dengan panduan garis bantu (_framing guide_), **animasi hitung mundur 10 detik (angka berubah warna merah saat $\le 3$ detik)**, dan efek kilat layar (_flash_).
-  8. Sistem menggabungkan seluruh foto hasil jepretan secara real-time ke dalam slot frame pilihan.
-  9. Layar menampilkan preview hasil foto, QR Code dengan Signed URL berdurasi 1 jam, serta indikator peringatan waktu unduh.
-  10. Pengunjung memindai QR Code menggunakan smartphone untuk mengunduh foto strip sebelum link kedaluwarsa. Layar otomatis _reset_ kembali ke **Halaman Welcome** dalam 60 detik (atau langsung klik tombol touchless "Selesai & Kembali ✨").
+- **Target Pengguna:**
+  1. **Pengunjung Acara (*Booth Visitors*):** Pengguna umum yang berinteraksi secara mandiri dan higienis tanpa menyentuh layar.
+  2. **Operator Acara (*Booth Operators*):** Pengguna dengan akun login Supabase Auth untuk membuka dan mengunci sesi booth photobooth di lokasi acara.
+  3. **Administrator Frame (*Booth Administrator*):** Akun khusus (`NEXT_PUBLIC_ADMIN_EMAIL`) yang memiliki kewenangan penuh untuk menambah, menguji coba, mengaktifkan/menonaktifkan, dan menghapus template frame di `/admin/frames`.
+
+- **Skenario Penggunaan Pengunjung (Touchless Flow):**
+  1. Pengunjung berdiri di depan layar photo booth. Kamera aktif otomatis setelah operator login dan memberi izin kamera.
+  2. Layar menampilkan **Halaman Welcome** berisi greeting, 3 langkah panduan cepat (*quick start guide*), dan tombol touchless "Mulai Sekarang ✨".
+  3. Pengunjung mengarahkan jari telunjuk ke kamera untuk menggerakkan kursor virtual, lalu menahan kursor di tombol "Mulai Sekarang ✨" selama 1.5 detik (*dwell time*).
+  4. Pengunjung memilih salah satu frame dari galeri paginasi (**6 frame per halaman** dalam grid responsif dengan tombol navigasi touchless `❮` `❯`).
+  5. Halaman pemilihan frame dilengkapi **timer otomatis 2 menit (120 detik)**: jika pengunjung tidak memilih frame dalam 2 menit, sistem otomatis memulai sesi dengan frame default.
+  6. Sesi foto otomatis berlangsung dinamis sesuai jumlah slot pada frame terpilih (misal 2, 3, atau 4 jepretan) dengan panduan garis bantu (*framing guide* adaptif), **animasi hitung mundur 10 detik (angka berubah merah menyala saat $\le 3$ detik)**, dan efek kilat layar (*white flash*).
+  7. Sistem menggabungkan seluruh foto hasil jepretan secara real-time ke dalam slot frame pilihan sesuai dimensi kanvas aslinya.
+  8. Layar menampilkan preview hasil foto komposit, QR Code dengan Signed URL berdurasi 1 jam, serta indikator peringatan waktu unduh.
+  9. Pengunjung memindai QR Code menggunakan smartphone untuk mengunduh foto strip. Layar otomatis *reset* kembali ke **Halaman Welcome** dalam 60 detik (atau langsung via tombol touchless "Selesai & Kembali ✨").
+
+- **Skenario Penggunaan Administrator (Frame Management Flow):**
+  1. Administrator login menggunakan email admin yang terkonfigurasi di `NEXT_PUBLIC_ADMIN_EMAIL`.
+  2. Tombol **🎨 Kelola Frame** muncul secara eksklusif di Halaman Welcome bagi akun admin.
+  3. Di halaman `/admin/frames`, admin melihat daftar seluruh template frame (aktif & nonaktif) dengan filter dan status.
+  4. Admin dapat mengunggah frame PNG transparan baru dengan dimensi kanvas bebas/dinamis (tidak terbatas pada rasio tertentu).
+  5. Sistem secara otomatis mendeteksi koordinat dan dimensi area transparan (*hole detection* via Alpha pixel scanning) sebagai slot foto awal.
+  6. Admin dapat menguji coba hasil akhir komposisi secara instan menggunakan foto dari file lokal atau jepretan webcam (1 jepretan otomatis mengisi semua slot preview) lengkap dengan fitur Zoom In/Out.
+  7. Admin dapat mengaktifkan/menonaktifkan frame atau menghapus frame secara permanen (membersihkan database dan file fisik di bucket Supabase Storage).
 
 ---
 
 ## 3. Tech Stack Utama
 
-| Layer                    | Teknologi                             | Peran & Alasan Pemilihan                                                                               |
-| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Frontend Framework**   | Next.js (App Router, React 19)        | Manajemen _state_ UI, performa rendering tinggi, fleksibilitas integrasi React components.             |
-| **Styling & UI**         | Tailwind CSS v4 + Framer Motion       | Desain modern bernuansa solid amber & dark zinc, tanpa gradient mencolok, animasi fluid dan responsif. |
-| **Computer Vision**      | MediaPipe Hand Landmarker             | Pelacakan 21 titik _landmark_ tangan secara _client-side_ via WebAssembly (WASM).                      |
-| **Media & Canvas API**   | HTML5 `getUserMedia` & `<canvas>`     | Mengakses _stream_ webcam real-time (mirrored) dan memproses gabungan foto + frame.                    |
-| **Backend & Storage**    | Supabase (Database, Storage, pg_cron) | Storage Bucket `frame_image` & `photobooth_images`, tabel `frames` & `photos`, serta cronjob otomatis. |
-| **QR Generation & Auth** | `qrcode.react` + Supabase Signed URL  | Menggenerasi QR Code dinamis berbasis Signed URL dengan masa berlaku 1 jam (3600 detik).               |
+| Layer | Teknologi | Peran & Alasan Pemilihan |
+| :--- | :--- | :--- |
+| **Frontend Framework** | Next.js (App Router, React 19, TS) | Manajemen state UI, performa rendering tinggi, fleksibilitas routing, dan integrasi modular. |
+| **Styling & UI** | Tailwind CSS v4 + Framer Motion | Desain modern solid amber & dark zinc, glassmorphism, animasi fluid, dan layout responsif. |
+| **Computer Vision** | MediaPipe Hand Landmarker | Pelacakan 21 titik *landmark* tangan secara *client-side* via WebAssembly (WASM). |
+| **Media & Canvas API** | HTML5 `getUserMedia` & `<canvas>` | Mengakses webcam (mirrored), deteksi piksel transparan frame, dan perakitan foto komposit real-time. |
+| **Backend & Storage** | Supabase (Auth, Postgres, Storage, pg_cron) | Otentikasi operator/admin, tabel `frames` & `photos`, bucket `frame_image` & `photobooth_images`, serta pembersihan cronjob. |
+| **QR Generation** | `qrcode.react` + Signed URL | Menggenerasi QR Code dinamis berbasis Signed URL dengan masa berlaku 1 jam (3600s). |
 
 ---
 
-## 4. Alur Pengguna (User Flow)
+## 4. Alur Pengguna & Fitur Aplikasi
 
-1. **Inisiasi & Akses Kamera Otomatis:**
-   - Pengguna membuka aplikasi di browser.
-   - Aplikasi memeriksa izin kamera via Browser Permissions API: jika sudah pernah diizinkan, kamera langsung aktif dan langsung membuka Halaman Welcome.
-2. **Halaman Welcome & Quick Start Guide:**
-   - Menyambut pengunjung dengan greeting ramah dan lencana branding `TOUCHLESS PHOTO BOOTH`.
-   - Menampilkan 3 kartu panduan visual:
-     1. **Gerakkan Kursor ☝️:** Mengarahkan jari telunjuk ke arah kamera.
-     2. **Tahan untuk Memilih ⏱️:** Menahan kursor selama 1.5 detik (_dwell timer_) pada elemen yang dituju.
-     3. **Scan & Download 📲:** Berpose di depan kamera lalu memindai QR Code dengan HP.
-   - Tombol utama touchless "Mulai Sekarang ✨" dengan dwell time 1.5 detik (atau klik langsung) untuk beralih ke pemilihan frame.
-3. **Navigasi Touchless & Virtual Cursor:**
-   - MediaPipe melacak posisi ujung jari telunjuk (Landmark #8: `INDEX_FINGER_TIP`).
-   - Kursor virtual diatur dengan _Double Exponential Smoothing (Holt's Method)_ + _Dead-zone Filter_ untuk pergerakan mulus tanpa jitter.
-   - _Tracking Persistence (Hysteresis)_ menahan kursor selama 18 frame (~300ms) jika tangan terputus sekejap di pinggir kamera.
-4. **Pemilihan Frame Dinamis (6 Frame Per Page & Timer 2 Menit):**
-   - Layar memuat daftar frame aktif (`status = 1`) dari tabel Supabase `frames` & Storage Bucket `frame_image`.
-   - Menampilkan **6 frame per halaman** dalam grid 3x2 yang rapi dan responsif, lengkap dengan tombol navigasi touchless (`❮` Prev & `❯` Next) berdurasi dwell 1 detik.
-   - Dilengkapi **countdown timer 2 menit (120 detik)**: jika pengguna tidak memilih atau menekan tombol mulai dalam 2 menit, sistem otomatis memulai sesi dengan frame default.
-   - Pengguna menahan kursor (_dwell time_ 1.5 detik) di atas frame atau tombol "Mulai Foto (Nx Take)".
-5. **Sesi Foto Multi-Shot Dinamis & Garis Bantu Framing:**
-   - Sesi foto berlangsung otomatis sesuai jumlah slot pada frame (`selectedFrame.slots.length`, misal 2 atau 3 foto):
-     a. Teks status "FOTO N DARI Total" dan indikator progress bar di sudut layar.
-     b. **Garis Bantu Framing (Framing Guide Box)** dengan rasio `width` dan `height` yang persis sama dengan slot aktif saat itu (misal `195x200px`) ditampilkan di tengah layar, lengkap dengan corner brackets amber dan label `Area Foto (Width×Height px)`.
-     c. **Animasi hitung mundur 10 detik** (10, 9, 8... 1) berukuran besar di tengah kotak garis bantu, di mana angka **berubah warna menjadi merah menyala saat $\le 3$ detik** (3, 2, 1) sebagai sinyal persiapan pose akhir.
-     d. Efek kilat layar penuh (_white flash overlay_ ~200ms) saat foto diambil via HTML5 Canvas (mirrored).
-     e. Jeda preview singkat (1.5 detik) antar jepretan sebelum beralih ke slot berikutnya.
-6. **Pemrosesan & Komposisi Real-Time:**
-   - Canvas menggabungkan seluruh foto Blob ke posisi slot (`slots` JSONB) pada canvas sesuai dimensi `canvas_width` & `canvas_height` dari database Supabase.
-   - Gambar frame PNG dari Supabase Storage ditimpa sebagai layer paling atas.
-7. **Layar Hasil & Akses QR Code (Signed URL 1 Jam):**
-   - Layar menampilkan _preview_ foto strip komposit (gabungan foto + frame).
-   - Sistem mengunggah foto ke Supabase Storage (`upsert: false`), menyimpan record di database `photos`, dan membuat **Signed URL** dengan waktu kedaluwarsa 1 jam (3600s).
-   - QR Code di-generate dari Signed URL dan dilengkapi lencana peringatan: `⏳ Link unduhan & QR Code berlaku selama 1 Jam`.
-   - Pengguna dapat memindai QR Code untuk mengunduh foto atau memilih tombol touchless "Selesai & Kembali ✨" untuk kembali ke Halaman Welcome.
-8. **Auto Reset & Cleansing Policy:**
-   - Sesi layar otomatis _reset_ kembali ke **Halaman Welcome** setelah 60 detik tanpa aktivitas di layar hasil.
-   - File fisik foto di Supabase Storage dan record metadata di database dihapus secara otomatis setelah 1 jam oleh Supabase `pg_cron`.
+### 4.1 Alur Pengunjung (Touchless Booth Experience)
+1. **Inisiasi & Akses Kamera Otomatis:** Kamera aktif setelah login operator tanpa permintaan izin berulang jika sudah diizinkan browser.
+2. **Halaman Welcome & Quick Start Guide:** Menyambut pengunjung dengan kartu panduan interaksi dan tombol CTA touchless.
+3. **Navigasi Touchless Virtual Cursor:** MediaPipe mendeteksi ujung telunjuk (Landmark #8), dihaluskan dengan *Holt's Double Exponential Smoothing* + *Dead-zone Filter* dan *Tracking Persistence (Hysteresis)* 18 frame.
+4. **Pemilihan Frame Dinamis (6 Item/Page):** Grid responsif dengan dwell button navigasi 1.0s dan timer auto-start 120s.
+5. **Multi-Shot Sesi Foto & Framing Guide Adaptif:** Hitung mundur 10 detik (angka merah menyala pada detik 3, 2, 1) dengan kotak garis bantu proporsional terhadap ukuran slot frame aktif.
+6. **Real-time Canvas Compositing:** Penggabungan foto jepretan ke slot frame dan overlay frame PNG transparan di canvas browser.
+7. **Layar Hasil & QR Code Signed URL:** QR Code berlaku 1 jam dengan tombol "Selesai & Kembali ✨" dan auto-reset 60s.
+
+### 4.2 Alur Operator & Administrator
+1. **Operator Gate (`LoginGate`):** Gerbang login Supabase Auth di awal aplikasi dengan handling getar (*shake alert*) dan auto-restore token JWT.
+2. **Admin Guard (`AdminGuard`):** Proteksi halaman `/admin/frames` dan tombol "Kelola Frame" di Halaman Welcome yang secara ketat memverifikasi kesesuaian email terhadap `NEXT_PUBLIC_ADMIN_EMAIL`.
+3. **Katalog & Filter Frame:** Manajemen status aktif (1) / nonaktif (0) dengan filter tabs ("Semua", "Aktif", "Nonaktif") dan pencarian real-time.
+4. **Deteksi Slot Transparan Otomatis (`FrameDetector`):** Algoritma pemindaian kanal alpha (`alpha === 0`) pada ImageData canvas untuk mendeteksi lubang foto secara otomatis saat file frame PNG diunggah.
+5. **Dukungan Dimensi Kanvas Dinamis:** Ukuran frame bebas (e.g. 745x310, 1080x1920, 1200x1800, dll.) dengan thumbnail rasio terjaga (*aspect-ratio container & object-contain*).
+6. **Uji Coba Komposisi Instan (`FrameTester`):**
+   - Mode Upload Gambar Komputer: Pratinjau langsung komposisi foto pada slot.
+   - Mode Webcam Mandiri: 1 kali take foto otomatis menduplikasi ke seluruh slot untuk pengetesan cepat.
+   - Fitur Zoom In / Out & Pan pada preview frame dan hasil komposit.
+7. **Penghapusan Bersih Transaksional:** Memvalidasi keberadaan file fisik di storage, menghapus file dari bucket `frame_image`, kemudian menghapus record database `frames`. Jika RLS menolak penghapusan storage, database tidak akan dihapus sembarangan demi konsistensi data.
 
 ---
 
-## 5. Rancangan Database, Storage & Security Hardening (Supabase)
+## 5. Rancangan Database, Storage & Keamanan (Supabase)
 
 ### 5.1 Storage Buckets & Policies (`storage.objects`)
 
-1. **`frame_image`**: Public Bucket untuk menyimpan file gambar PNG transparan frame (e.g. `frame_01_bunga.png`).
-2. **`photobooth_images`**: Bucket untuk menyimpan file hasil akhir foto strip pengguna.
+1. **`frame_image`**: Bucket publik untuk menyimpan file gambar PNG frame transparan.
+2. **`photobooth_images`**: Bucket publik untuk menyimpan file foto strip komposit hasil jepretan pengunjung.
 
 ```sql
--- Storage Policies untuk Bucket photobooth_images
+-- Storage Policies: Bucket photobooth_images
 CREATE POLICY "Allow public insert photobooth_images"
-ON storage.objects
-FOR INSERT
-TO public
+ON storage.objects FOR INSERT TO public
 WITH CHECK (bucket_id = 'photobooth_images');
 
-CREATE POLICY "Allow public select photobooth_images"
-ON storage.objects
-FOR SELECT
-TO public
-USING (bucket_id = 'photobooth_images');
+-- Storage Policies: Bucket frame_image (Public Select, Authenticated Insert & Delete)
+DROP POLICY IF EXISTS "Public frame_image are viewable by everyone" ON storage.objects;
+CREATE POLICY "Public frame_image are viewable by everyone"
+ON storage.objects FOR SELECT TO public
+USING (bucket_id = 'frame_image');
+
+DROP POLICY IF EXISTS "Admin can upload frame_image" ON storage.objects;
+CREATE POLICY "Admin can upload frame_image"
+ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'frame_image');
+
+DROP POLICY IF EXISTS "Admin can delete frame_image" ON storage.objects;
+CREATE POLICY "Admin can delete frame_image"
+ON storage.objects FOR DELETE TO authenticated
+USING (bucket_id = 'frame_image');
 ```
+
+> **Catatan Keamanan Storage Daemon:** Daemon storage Supabase (`storage-api`) mengevaluasi role `authenticated` tanpa meneruskan klaim custom email ke `auth.jwt()`. Oleh karena itu, otorisasi bucket menggunakan role `authenticated` dengan pengamanan email ketat di level aplikasi (`AdminGuard`).
 
 ### 5.2 Schema Tabel `frames` & RLS
 
@@ -129,17 +134,29 @@ CREATE TABLE IF NOT EXISTS public.frames (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Aktifkan RLS & Kebijakan SELECT Publik Tunggal
 ALTER TABLE public.frames ENABLE ROW LEVEL SECURITY;
 
+-- Publik (pengunjung booth) boleh melihat daftar frame
 CREATE POLICY "Public frames are viewable by everyone"
-ON public.frames
-FOR SELECT
-TO public
+ON public.frames FOR SELECT TO public USING (true);
+
+-- Admin terautentikasi boleh menambah, mengubah status, dan menghapus frame
+DROP POLICY IF EXISTS "Admin can insert frames" ON public.frames;
+CREATE POLICY "Admin can insert frames"
+ON public.frames FOR INSERT TO authenticated
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Admin can update frames" ON public.frames;
+CREATE POLICY "Admin can update frames"
+ON public.frames FOR UPDATE TO authenticated
+USING (true)
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Admin can delete frames" ON public.frames;
+CREATE POLICY "Admin can delete frames"
+ON public.frames FOR DELETE TO authenticated
 USING (true);
 ```
-
-> **Catatan Dynamic Slots:** Jumlah elemen dalam array `slots` menentukan jumlah jepretan foto secara otomatis. Jika array berisi 2 slot, sesi foto akan otomatis mengambil 2 foto; jika 3 slot, mengambil 3 foto.
 
 ### 5.3 Schema Tabel `photos` & RLS
 
@@ -152,37 +169,25 @@ CREATE TABLE IF NOT EXISTS public.photos (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Aktifkan RLS & Kebijakan INSERT / SELECT
 ALTER TABLE public.photos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public insert to photos"
-ON public.photos
-FOR INSERT
-TO public
-WITH CHECK (
-  image_url IS NOT NULL
-  AND length(image_url) > 5
-);
+ON public.photos FOR INSERT TO public
+WITH CHECK (image_url IS NOT NULL AND length(image_url) > 5);
 
 CREATE POLICY "Allow public select on photos"
-ON public.photos
-FOR SELECT
-TO public
-USING (true);
+ON public.photos FOR SELECT TO public USING (true);
 ```
 
-### 5.4 Otomatisasi Hapus Foto & Pembersihan Storage (`pg_cron`)
+### 5.4 Otomatisasi Pembersihan Foto (`pg_cron`)
 
-Untuk efisiensi penyimpanan dan perlindungan privasi pengguna, file foto dan record database dibatasi masa simpan maksimal 1 jam. Supabase `pg_cron` dan fungsi PL/pgSQL dieksekusi secara berkala setiap jam dengan proteksi keamanan penuh (_hardened search_path & revoked public RPC_):
+Foto strip pengunjung dibatasi masa simpan maksimal 1 jam:
 
 ```sql
--- 1. Aktifkan ekstensi pg_cron (jika belum)
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- 2. Hapus jadwal cronjob lama agar tidak terjadi duplikasi/konflik
 SELECT cron.unschedule('auto-delete-expired-photobooth-images');
 
--- 3. Fungsi pembersih foto dengan search_path terkunci dan bypass trigger aman
 CREATE OR REPLACE FUNCTION public.delete_expired_photos()
 RETURNS void
 LANGUAGE plpgsql
@@ -190,82 +195,76 @@ SECURITY DEFINER
 SET search_path = public, storage
 AS $$
 BEGIN
-  -- Bypass trigger proteksi hapus (storage.protect_delete) secara aman
   SET LOCAL session_replication_role = 'replica';
 
-  -- A. Hapus file fisik di Supabase Storage bucket 'photobooth_images'
   DELETE FROM storage.objects
   WHERE bucket_id = 'photobooth_images'
     AND created_at < NOW() - INTERVAL '1 hours';
 
-  -- B. Hapus record metadata di tabel 'public.photos'
   DELETE FROM public.photos
   WHERE created_at < NOW() - INTERVAL '1 hours';
 END;
 $$;
 
--- 4. Cabut hak akses eksekusi publik (anon/authenticated) agar tidak bisa dipanggil via HTTP REST API
 REVOKE EXECUTE ON FUNCTION public.delete_expired_photos() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.delete_expired_photos() TO postgres, service_role;
 
--- 5. Jadwalkan kembali cronjob (Berjalan otomatis setiap 1 jam via user internal postgres)
 SELECT cron.schedule(
   'auto-delete-expired-photobooth-images',
-  '0 * * * *', -- Berjalan setiap jam (menit ke-0)
+  '0 * * * *',
   $$SELECT public.delete_expired_photos()$$
 );
 ```
 
 ---
 
-## 6. Spesifikasi Teknikal & Algoritma Interaksi
+## 6. Spesifikasi Lingkungan (*Environment Variables*)
 
-### 6.1 State Machine Aplikasi
+Semua kredensial dan konfigurasi hak akses tersentralisasi di `.env.local` tanpa ada *hardcoding* di file skrip:
 
-| State Name        | Komponen Tampilan  | Deskripsi Perilaku                                                      |
-| ----------------- | ------------------ | ----------------------------------------------------------------------- |
-| `PERMISSION`      | `PermissionGate`   | Meminta izin akses webcam jika belum diizinkan oleh browser.            |
-| `WELCOME`         | `WelcomeScreen`    | Halaman default awal & tujuan reset: greeting, 3 langkah panduan & CTA. |
-| `FRAME_SELECTION` | `FrameSelector`    | Galeri frame (6 item/page), countdown 2 menit auto-start.               |
-| `MULTI_SHOT`      | `MultiShotOverlay` | Pengambilan foto dinamis (countdown, framing guide, white flash).       |
-| `RESULT`          | `ResultView`       | Preview hasil foto strip, QR Code Signed URL 1 jam, auto-reset 60s.     |
+```env
+# URL & Kunci Akses Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
 
-### 6.2 Pemetaan Koordinat & Smoothing Kursor
+# Email Administrator Tunggal Pengelola Frame (/admin/frames)
+NEXT_PUBLIC_ADMIN_EMAIL=admin@booth.com
+```
 
-- Landmark #8 (`INDEX_FINGER_TIP`) dikonversi ke koordinat layar dengan efek cermin:
-  $$X_{screen} = (1 - x_{landmark}) \times Width_{screen}$$
-  $$Y_{screen} = y_{landmark} \times Height_{screen}$$
-- Koordinat di-clamp 10px dari batas layar agar kursor tidak hilang saat menjangkau tombol di pinggir.
-- _Double Exponential Smoothing (Holt's Method)_ diterapkan untuk eliminasi jitter tanpa lag:
-  $$S_t = \alpha \cdot Y_t + (1 - \alpha)(S_{t-1} + T_{t-1})$$
+---
 
-### 6.3 Grid Galeri Frame (6 Item/Page) & Navigasi Touchless
+## 7. Arsitektur Komponen & State Machine
 
-- **Layout Galeri:** 6 frame per halaman dalam grid 3 kolom x 2 baris (`grid-cols-2 sm:grid-cols-3`).
-- **Dwell Time Main CTA / Frame Card:** 1.5 detik (1500ms) dengan indikator lingkaran SVG radial progress.
-- **Dwell Time Navigasi (❮ / ❯):** 1.0 detik (1000ms) untuk pemindahan halaman galeri frame secara cepat.
-- **Tracking Persistence:** Kursor menahan lokasi terakhir selama 18 frame (~300ms) jika telapak tangan terpotong di pinggir kamera.
-
-### 6.4 Auto-Start Timer 2 Menit & Auto-Reset
-
-- **Pilih Frame Auto-Start (120 Detik):** Hook `useAutoReset` berdurasi 120 detik pada `FrameSelector`. Jika tidak ada interaksi sebelum waktu habis, sistem otomatis memilih frame pertama/aktif dan langsung berpindah ke sesi `MULTI_SHOT`.
-- **Hasil Foto Auto-Reset (60 Detik):** Hook `useAutoReset` berdurasi 60 detik pada `ResultView` untuk me-reset booth kembali ke **Halaman Welcome** jika pengunjung meninggalkan layar hasil.
-
-### 6.5 Pengambilan Foto, Countdown 10 Detik & Dynamic Slots
-
-- **Sesi Multi-Shot Adaptif:** Jumlah sesi foto dihitung dari `selectedFrame.slots.length` (fallback ke 3).
-- **Hitung Mundur 10 Detik & Visual Alert Merah:** Setiap jepretan foto didahului animasi hitung mundur selama 10 detik (10..1). Saat waktu tersisa $\le 3$ detik (3, 2, 1), warna angka otomatis berubah dari putih menjadi **merah menyala** (`text-red-500`) dengan efek _drop-shadow glow_ merah untuk memberi sinyal visual persiapan pose akhir.
-- **Garis Bantu Framing Dinamis:** Kotak panduan kamera (_framing guide_) menyesuaikan rasio dimensi `slots[currentShot - 1]` secara real-time pada setiap jepretan, memastikan subjek terbingkai presisi tanpa terpotong.
-- **Compositing Canvas Real-Time:** Foto diletakkan tepat pada koordinat (`x`, `y`, `width`, `height`) masing-masing slot dengan crop _object-fit: cover_, lalu di-overlay oleh gambar PNG frame.
-
-### 6.6 Keamanan QR Code & Masa Berlaku Signed URL
-
-- **Signed URL Expiration:** Menggunakan method `supabase.storage.from('photobooth_images').createSignedUrl(path, 3600)` sehingga tautan unduhan QR Code hanya valid selama 60 menit (3600 detik).
-- **UI Alert Badge:** Menampilkan lencana warna amber pada halaman hasil (`ResultView`): `⏳ Link unduhan & QR Code berlaku selama 1 Jam`.
-
-### 6.7 Operator Authentication Gate & Session Lifecycle (Supabase Auth)
-
-- **Gerbang Akses Operator (`LoginGate`):** Sebelum pengunjung atau operator dapat mengakses kamera dan sesi foto, aplikasi dilindungi oleh form login terintegrasi Supabase Auth (`supabase.auth.signInWithPassword`).
-- **Pengecekan Sesi Otomatis (`useAuth`):** Aplikasi secara reaktif mendeteksi token JWT sesi yang tersimpan di browser (`supabase.auth.getSession()` dan `onAuthStateChange`). Jika sesi masih valid, photobooth langsung terbuka tanpa meminta login ulang saat halaman dimuat ulang (*refresh*).
-- **Discreet Operator Logout:** Terdapat tombol *logout* operator di pojok kiri atas Halaman Welcome yang memungkinkan operator mengakhiri sesi dan mengunci kembali photobooth saat acara selesai.
-- **Handling Error & Keamanan:** Pesan kesalahan login diformat ramah pengguna (*user-friendly error handling*) dan dilindungi enkripsi JWT standar industri Supabase.
+```
+[ Buka Web ]
+     │
+     ▼
+┌──────────────┐      Login Berhasil
+│  State: AUTH ├────────────────────────────┐
+└──────┬───────┘                            │
+       │ Belum Login                        ▼
+       ▼                            ┌──────────────────┐
+ [ Form Login ]                     │ State: PERMISSION│ (Jika izin kamera belum aktif)
+                                    └────────┬─────────┘
+                                             │ Izin Diberikan
+                                             ▼
+                                    ┌──────────────────┐
+                                    │  State: WELCOME  │ ◄────────────────────────┐
+                                    └────────┬─────────┘                          │
+                                             │ Dwell 1.5s "Mulai Sekarang"        │
+                                             ▼                                    │
+                                    ┌──────────────────┐                          │
+                                    │ FRAME_SELECTION  │ (Timer 2 Menit Auto)     │
+                                    └────────┬─────────┘                          │
+                                             │ Dwell 1.5s "Mulai Foto"            │
+                                             ▼                                    │
+                                    ┌──────────────────┐                          │
+                                    │ State: MULTI_SHOT│ (Countdown 10s & Guide)  │
+                                    └────────┬─────────┘                          │
+                                             │ Selesai Semua Jepretan             │
+                                             ▼                                    │
+                                    ┌──────────────────┐                          │
+                                    │  State: RESULT   ├──────────────────────────┘
+                                    └──────────────────┘  Auto-Reset 60s / Tombol Selesai
+```
+*Jalur Khusus Admin:* Halaman Welcome $\rightarrow$ Tombol `🎨 Kelola Frame` $\rightarrow$ Halaman `/admin/frames` (CRUD Frame, Auto-detect slot, Live tester).

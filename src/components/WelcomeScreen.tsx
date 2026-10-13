@@ -1,9 +1,11 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import type { Point2D } from '@/types';
 import { useDwellTimer } from '@/hooks/useDwellTimer';
+import { isAdminEmail } from '@/lib/adminConfig';
 
 interface WelcomeScreenProps {
   cursorPositionRef: React.RefObject<Point2D | null>;
@@ -60,17 +62,28 @@ export default function WelcomeScreen({
     >
       {/* Discreet Operator Logout Pill (Top Left) */}
       {onLogout && (
-        <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-30">
+        <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-30 flex items-center gap-2">
           <button
             onClick={onLogout}
             title="Keluar Sesi Operator"
             className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/10 text-[10px] sm:text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <span>👤</span>
-            <span className="max-w-[120px] truncate hidden sm:inline">{userEmail || 'Operator'}</span>
+            <span className="max-w-30 truncate hidden sm:inline">{userEmail || 'Operator'}</span>
             <span className="text-zinc-500">|</span>
             <span>Keluar 🚪</span>
           </button>
+
+          {isAdminEmail(userEmail) && (
+            <Link
+              href="/admin/frames"
+              title="Kelola Frame Photobooth"
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-white/10 text-[10px] sm:text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>🎨</span>
+              <span className="hidden sm:inline">Kelola Frame</span>
+            </Link>
+          )}
         </div>
       )}
 

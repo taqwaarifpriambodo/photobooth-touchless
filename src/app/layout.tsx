@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import GlobalErrorHandler from "@/components/GlobalErrorHandler";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,8 +17,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-black text-white font-sans overflow-hidden">
+    <html lang="id" className={`${inter.variable} min-h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-black text-white font-sans overflow-x-hidden">
+        <GlobalErrorHandler />
         {children}
       </body>
     </html>

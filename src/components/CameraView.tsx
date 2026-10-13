@@ -19,7 +19,6 @@ const CameraView = forwardRef<HTMLVideoElement, CameraViewProps>(
         {/* Video Feed */}
         <video
           ref={ref}
-          autoPlay
           playsInline
           muted
           className="camera-video"

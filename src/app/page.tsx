@@ -41,7 +41,14 @@ export default function Home() {
     cursorRef,
   } = useHandTracking(videoRef, isReady);
 
-  const { frames, selectedFrame, setSelectedFrame } = useFrames();
+  const {
+    frames,
+    selectedFrame,
+    setSelectedFrame,
+    isLoading: isFramesLoading,
+    error: framesError,
+    refreshFrames,
+  } = useFrames();
 
   // Callback saat foto & compositing selesai
   const handleSessionComplete = useCallback(
@@ -112,10 +119,11 @@ export default function Home() {
   );
 
   const handleConfirmFrame = useCallback(() => {
+    if (!selectedFrame) return;
     console.log('[App] Frame confirmed. Starting photo session...');
     setAppState('MULTI_SHOT');
     startSession();
-  }, [startSession]);
+  }, [selectedFrame, startSession]);
 
   const handleFinish = useCallback(() => {
     console.log('[App] Session finished or auto-reset. Resetting booth to Welcome screen...');
@@ -244,6 +252,9 @@ export default function Home() {
                 cursorPositionRef={cursorPosition}
                 onSelectFrame={handleSelectFrame}
                 onConfirm={handleConfirmFrame}
+                isLoading={isFramesLoading}
+                error={framesError}
+                onRetry={refreshFrames}
               />
             )}
 

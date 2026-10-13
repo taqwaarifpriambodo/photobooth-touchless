@@ -53,10 +53,10 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Menggabungkan 3 Blob foto ke dalam canvas frame (745x310 px).
+ * Menggabungkan Blob foto ke dalam canvas frame dengan ukuran dan slot dinamis.
  * - Foto ditaruh di slot masing-masing dengan crop cover (object-fit: cover)
  * - PNG frame transparan ditaruh di layer paling atas (overlay)
- * - Hasil diexport ke Blob PNG/JPEG beresolusi tinggi.
+ * - Hasil diexport ke Blob PNG/JPEG beresolusi tinggi sesuai canvasWidth & canvasHeight frame.
  */
 export async function compositePhotosWithFrame(
   photos: Blob[],
@@ -108,23 +108,30 @@ export async function compositePhotosWithFrame(
   }
 
   // 2. Load dan gambar PNG Frame di atas foto (Layer paling atas)
-  const frameSrc = frameTemplate.publicUrl || `/frames/${frameTemplate.file}`;
+  const frameSrc = frameTemplate.publicUrl || frameTemplate.file;
   const frameImg = await loadImage(frameSrc);
 
   ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-  // 3. Export canvas ke Blob PNG
+  // 3. Export canvas ke Blob (JPEG berkualitas tinggi 0.92 untuk efisiensi ukuran file)
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
           resolve(blob);
         } else {
-          reject(new Error('Gagal merender hasil komposisi frame'));
+          // Fallback ke PNG jika browser gagal export JPEG
+          canvas.toBlob(
+            (pngBlob) => {
+              if (pngBlob) resolve(pngBlob);
+              else reject(new Error('Gagal merender hasil komposisi frame'));
+            },
+            'image/png'
+          );
         }
       },
-      'image/png',
-      1.0
+      'image/jpeg',
+      0.92
     );
   });
 }
