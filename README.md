@@ -219,16 +219,6 @@ CREATE POLICY "Admin can delete frames"
 ON public.frames FOR DELETE TO authenticated
 USING (true);
 
--- Insert Template Frame Awal
-INSERT INTO public.frames (frame_name, filename, canvas_width, canvas_height, slots, status)
-VALUES
-  ('Bunga Vintage', 'frame_01_bunga.png', 745, 310, '[{"x":55,"y":55,"width":195,"height":200},{"x":275,"y":55,"width":195,"height":200},{"x":495,"y":55,"width":195,"height":200}]'::jsonb, 1),
-  ('Biru Minimalis', 'frame_02_biru.png', 745, 310, '[{"x":55,"y":55,"width":195,"height":200},{"x":275,"y":55,"width":195,"height":200},{"x":495,"y":55,"width":195,"height":200}]'::jsonb, 1),
-  ('Kayu Klasik', 'frame_03_kayu.png', 745, 310, '[{"x":55,"y":55,"width":195,"height":200},{"x":275,"y":55,"width":195,"height":200},{"x":495,"y":55,"width":195,"height":200}]'::jsonb, 1),
-  ('Hitam Emas', 'frame_05_hitam_emas.png', 745, 310, '[{"x":55,"y":55,"width":195,"height":200},{"x":275,"y":55,"width":195,"height":200},{"x":495,"y":55,"width":195,"height":200}]'::jsonb, 1),
-  ('Lavender Aesthetic', 'frame_06_lavender.png', 745, 310, '[{"x":55,"y":55,"width":195,"height":200},{"x":275,"y":55,"width":195,"height":200},{"x":495,"y":55,"width":195,"height":200}]'::jsonb, 1)
-ON CONFLICT DO NOTHING;
-
 -- ============================================================
 -- 3. TABEL PHOTOS & ROW LEVEL SECURITY (RLS)
 -- ============================================================
